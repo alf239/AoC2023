@@ -1,0 +1,12 @@
+[package]
+name = "aoc2023"
+version = "0.1.0"
+authors = ["Alexey Filippov <alexey@filippov.uk>"]
+edition = "2021"
+
+[lib]
+bench = false
+
+[dependencies]
+aoc-runner = "0.3.0"
+aoc-runner-derive = "0.3.0"
