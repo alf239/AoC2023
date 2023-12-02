@@ -1,5 +1,5 @@
 const DIGITS: &'static [&'static str] = &[
-    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
 const RADIX: u32 = DIGITS.len() as u32;
 
@@ -19,10 +19,14 @@ pub fn solve_part2(input: &str) -> u32 {
     input
         .lines()
         .map(|s| {
-            let mut digits: Vec<(usize, u32)> = s.chars().enumerate()
+            let mut digits: Vec<(usize, u32)> = s
+                .chars()
+                .enumerate()
                 .filter_map(|(i, c)| c.to_digit(RADIX).map(|d| (i, d)))
                 .collect();
-            let mut words: Vec<(usize, u32)> = DIGITS.iter().enumerate()
+            let mut words: Vec<(usize, u32)> = DIGITS
+                .iter()
+                .enumerate()
                 .flat_map(|(d, w)| [(s.find(w), d), (s.rfind(w), d)])
                 .filter_map(|(p, d)| p.map(|x| (x, d as u32)))
                 .collect();
