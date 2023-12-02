@@ -44,7 +44,7 @@ fn power(game: &Game) -> usize {
     let mut req = HashMap::new();
     game.1.iter().for_each(|r| r.iter().for_each(|(colour, count)| {
         let c: usize = *count;
-        let mut entry = req.entry(colour).or_insert(c);
+        let entry = req.entry(colour).or_insert(c);
         if *entry < c { *entry = c; }
     }));
     req.values().product()
