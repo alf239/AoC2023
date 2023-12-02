@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 const DIGITS: &'static [&'static str] = &[
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
 ];
