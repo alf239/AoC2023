@@ -61,12 +61,20 @@ pub fn solve_part1(input: &Vec<Game>) -> usize {
         .sum()
 }
 
+fn power(game: &Game) -> usize {
+    let mut req: HashMap<&str, usize> = HashMap::new();
+    game.1.iter().for_each(|r| r.iter().for_each(|(colour, count)| {
+        let c: usize = *count;
+        let mut entry = req.entry(colour).or_insert(c);
+        if *entry < c { *entry = c; }
+    }));
+    req.values().product()
+}
+
 #[aoc(day2, part2)]
 pub fn solve_part2(input: &Vec<Game>) -> usize {
     input
         .iter()
-        .map(|g: &Game| {
-            2
-        })
+        .map(power)
         .sum()
 }
