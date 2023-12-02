@@ -37,10 +37,10 @@ pub fn input_generator(input: &str) -> Vec<Game> {
         .collect()
 }
 
-fn possible(game: &Game, budget: &HashMap<String, usize>) -> bool {
+fn possible(game: &Game, budget: &HashMap<&str, usize>) -> bool {
     game.1.iter().all(|round|
         round.iter().all(|(colour, req)|
-            match budget.get(colour) {
+            match budget.get(colour.as_str()) {
                 Some(b) => b >= req,
                 None => false
             }
@@ -50,10 +50,7 @@ fn possible(game: &Game, budget: &HashMap<String, usize>) -> bool {
 
 #[aoc(day2, part1)]
 pub fn solve_part1(input: &Vec<Game>) -> usize {
-    let budget: HashMap<String, usize> = HashMap::from([
-        ("red".to_string(), 12),
-        ("green".to_string(), 13),
-        ("blue".to_string(), 14)]);
+    let budget = HashMap::from([("red", 12), ("green", 13), ("blue", 14)]);
     input
         .iter()
         .filter(|g| possible(g, &budget))
@@ -62,7 +59,7 @@ pub fn solve_part1(input: &Vec<Game>) -> usize {
 }
 
 fn power(game: &Game) -> usize {
-    let mut req: HashMap<&str, usize> = HashMap::new();
+    let mut req = HashMap::new();
     game.1.iter().for_each(|r| r.iter().for_each(|(colour, count)| {
         let c: usize = *count;
         let mut entry = req.entry(colour).or_insert(c);
