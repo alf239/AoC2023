@@ -1,40 +1,22 @@
 use std::collections::HashMap;
 
-use nom::{IResult, Parser};
-use nom::bytes::complete::tag;
-use nom::character::complete::{alphanumeric1, digit1, space1};
-use nom::multi::separated_list0;
-use nom::sequence::{preceded, separated_pair};
+use aoc_parse::{parser, prelude::*};
 
 type Round = Vec<(String, usize)>;
 
 type Game = (usize, Vec<Round>);
 
-fn parser(s: &str) -> IResult<&str, Game> {
-    let title = preceded(tag("Game "), digit1);
-    let ball_spec = separated_pair(digit1, space1, alphanumeric1);
-    let round = separated_list0(tag(", "), ball_spec);
-    let rounds = separated_list0(tag("; "), round);
-    let mut full_spec = separated_pair(title, tag(": "), rounds);
-    let (input, (nr, rs)) = full_spec.parse(s)?;
-
-    let game_nr = nr.parse().unwrap();
-    let game_def: Vec<Round> = rs.iter().map(
-        |r| {
-            let balls: Vec<(String, usize)> = r.iter().map(
-                |(count, colour)| (colour.to_string(), count.parse().unwrap())
-            ).collect();
-            balls
-        }).collect();
-    Ok((input, (game_nr, game_def)))
-}
-
 #[aoc_generator(day2)]
 pub fn input_generator(input: &str) -> Vec<Game> {
-    input
-        .lines()
-        .map(|l| parser(l).unwrap().1)
-        .collect()
+    let p = parser!(lines(
+        "Game " usize ": "
+        repeat_sep(
+            repeat_sep(
+                cnt:usize " " clr:string(alpha*) => (clr, cnt),
+                ", "),
+            "; ")
+    ));
+    p.parse(input).unwrap()
 }
 
 fn possible(game: &Game, budget: &HashMap<&str, usize>) -> bool {

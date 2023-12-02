@@ -2,7 +2,7 @@ extern crate aoc_runner;
 
 #[macro_use]
 extern crate aoc_runner_derive;
-extern crate nom;
+extern crate aoc_parse;
 
 mod day1;
 mod day2;
