@@ -80,12 +80,12 @@ pub fn solve_part2((symbols, numbers): &(HashMap<Coords, char>, Vec<(u32, Coords
         .map(|(&key, &value)| (key, value))
         .collect();
 
-    let mut gears: HashMap<Coords, Vec<u32>> = HashMap::new();
+    let mut gears: HashMap<Coords, Vec<u32>> = stars.iter().map(|(&key, _)| (key, Vec::new())).collect();
 
     numbers.iter().for_each(|(number, pos)| {
         let nbrs = neighbours(*number, *pos, &stars);
         nbrs.iter().for_each(|p| {
-            gears.entry(*p).or_insert_with(Vec::new).push(*number);
+            gears.get_mut(p).unwrap().push(*number);
         })
     });
     let good_gears: Vec<(u64, u64)> = gears
