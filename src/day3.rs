@@ -53,7 +53,7 @@ fn neighbours(number: u32, pos: Coords, symbols: &HashMap<Coords, char>) -> Vec<
         nbrs.push((y, lt));
     }
     if symbols.contains_key(&(y, rt)) {
-        nbrs.push((y, lt));
+        nbrs.push((y, rt));
     }
     nbrs
 }
@@ -107,18 +107,58 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        let example = "467..114..
-        ...*......
-        ..35..633.
-        ......#...
-        617*......
-        .....+.58.
-        ..592.....
-        ......755.
-        ...$.*....
-        .664.598..";
+        let example = "
+            467..114..
+            ...*......
+            ..35..633.
+            ......#...
+            617*......
+            .....+.58.
+            ..592.....
+            ......755.
+            ...$.*....
+            .664.598.."
+            .trim();
         let input = input_generator(example);
         let result = solve_part2(&input);
         assert_eq!(result, 467835);
+    }
+
+    // https://www.reddit.com/r/adventofcode/comments/189q9wv/2023_day_3_another_sample_grid_to_use/
+    #[test]
+    fn reddit() {
+        let example = "
+            12.......*..
+            +.........34
+            .......-12..
+            ..78........
+            ..*....60...
+            78..........
+            .......23...
+            ....90*12...
+            ............
+            2.2......12.
+            .*.........*
+            1.1.......56"
+            .trim();
+        let input = input_generator(example);
+        let result1 = solve_part1(&input);
+        assert_eq!(result1, 413);
+        let result2 = solve_part2(&input);
+        assert_eq!(result2, 6756);
+    }
+    
+    // https://www.reddit.com/r/adventofcode/comments/189q9wv/comment/kbsrno0/
+    #[test]
+    fn reddit2() {
+        let example = "
+            .......5......
+            ..7*..*.......
+            ...*13*.......
+            .......15....."
+            .trim();
+        let input = input_generator(example);
+        let result2 = solve_part2(&input);
+        assert_eq!(result2, 442);
     }
 }
