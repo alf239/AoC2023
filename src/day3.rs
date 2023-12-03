@@ -34,16 +34,28 @@ pub fn input_generator(input: &str) -> (HashMap<Coords, char>, Vec<(u32, Coords)
     (symbols, numbers)
 }
 
-fn has_neighbour(number: u32, pos: Coords, symbols: &HashMap<Coords, char>) -> bool {
+fn neighbours(number: u32, pos: Coords, symbols: &HashMap<Coords, char>) -> Vec<Coords> {
     let (y, x) = pos;
     let len = number.to_string().len() as i32;
     let lt = x - 1;
     let rt = x + len;
-    let vert = (lt..=rt)
+    let mut nbrs: Vec<Coords> = (lt..=rt)
         .flat_map(|xn| [(y - 1, xn), (y + 1, xn)])
-        .any(|pos| symbols.contains_key(&pos));
-    let sides = symbols.contains_key(&(y, lt)) || symbols.contains_key(&(y, rt));
-    vert || sides
+        .filter_map(|pos| {
+            if symbols.contains_key(&pos) {
+                Some(pos)
+            } else {
+                None
+            }
+        })
+        .collect();
+    if symbols.contains_key(&(y, lt)) {
+        nbrs.push((y, lt));
+    }
+    if symbols.contains_key(&(y, rt)) {
+        nbrs.push((y, lt));
+    }
+    nbrs
 }
 
 #[aoc(day3, part1)]
@@ -51,16 +63,62 @@ pub fn solve_part1((symbols, numbers): &(HashMap<Coords, char>, Vec<(u32, Coords
     numbers
         .iter()
         .filter_map(|(number, pos)| {
-            if has_neighbour(*number, *pos, symbols) {
-                Some(number)
-            } else {
+            if neighbours(*number, *pos, symbols).is_empty() {
                 None
+            } else {
+                Some(number)
             }
         })
         .sum()
 }
 
 #[aoc(day3, part2)]
-pub fn solve_part2((symbols, numbers): &(HashMap<Coords, char>, Vec<(u32, Coords)>)) -> u32 {
-    2
+pub fn solve_part2((symbols, numbers): &(HashMap<Coords, char>, Vec<(u32, Coords)>)) -> u64 {
+    let stars: HashMap<Coords, char> = symbols
+        .iter()
+        .filter(|(_, v)| **v == '*')
+        .map(|(&key, &value)| (key, value))
+        .collect();
+
+    let mut gears: HashMap<Coords, Vec<u32>> = HashMap::new();
+
+    numbers.iter().for_each(|(number, pos)| {
+        let nbrs = neighbours(*number, *pos, &stars);
+        nbrs.iter().for_each(|p| {
+            gears.entry(*p).or_insert_with(Vec::new).push(*number);
+        })
+    });
+    let good_gears: Vec<(u64, u64)> = gears
+        .values()
+        .filter_map(|nrs| {
+            if nrs.len() == 2 {
+                Some((nrs[0] as u64, nrs[1] as u64))
+            } else {
+                None
+            }
+        })
+        .collect();
+    good_gears.iter().map(|(a, b)| a * b).sum()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn part2_example() {
+        let example = "467..114..
+        ...*......
+        ..35..633.
+        ......#...
+        617*......
+        .....+.58.
+        ..592.....
+        ......755.
+        ...$.*....
+        .664.598..";
+        let input = input_generator(example);
+        let result = solve_part2(&input);
+        assert_eq!(result, 467835);
+    }
 }
