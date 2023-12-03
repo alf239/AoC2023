@@ -76,12 +76,11 @@ pub fn solve_part1((symbols, numbers): &(HashMap<Coords, char>, Vec<(u32, Coords
 pub fn solve_part2((symbols, numbers): &(HashMap<Coords, char>, Vec<(u32, Coords)>)) -> u64 {
     let stars: HashMap<Coords, char> = symbols
         .iter()
-        .filter(|(_, v)| **v == '*')
-        .map(|(&key, &value)| (key, value))
+        .filter_map(|(&key, &v)| if v == '*' { Some((key, '*')) } else { None })
         .collect();
 
     let mut gears: HashMap<Coords, Vec<u32>> =
-        stars.iter().map(|(&key, _)| (key, Vec::new())).collect();
+        stars.iter().map(|(&pos, _)| (pos, Vec::new())).collect();
 
     numbers.iter().for_each(|(number, pos)| {
         let nbrs = neighbours(*number, *pos, &stars);
