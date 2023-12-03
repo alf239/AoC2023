@@ -1,15 +1,16 @@
 use std::collections::HashMap;
 
 const RADIX: u32 = 10;
+type Coords = (i32, i32);
 
-#[aoc(day3, part1)]
-pub fn solve_part1(input: &str) -> u32 {
-    let mut symbols: HashMap<(i32, i32), char> = HashMap::new();
-    let mut numbers: Vec<(u32, (i32, i32))> = Vec::new();
+#[aoc_generator(day3)]
+pub fn input_generator(input: &str) -> (HashMap<Coords, char>,  Vec<(u32, Coords)>) {
+    let mut symbols: HashMap<Coords, char> = HashMap::new();
+    let mut numbers: Vec<(u32, Coords)> = Vec::new();
 
     input.lines().enumerate().for_each(|(i, l)| {
         let mut acc: u32 = 0;
-        let mut pos: (i32, i32) = (0, 0);
+        let mut pos: Coords = (0, 0);
         l.trim().chars().enumerate().for_each(|(j, c)| {
             if c.is_digit(RADIX) {
                 if acc == 0 {
@@ -30,7 +31,12 @@ pub fn solve_part1(input: &str) -> u32 {
             numbers.push((acc, pos));
         }
     });
+    (symbols, numbers)
+}
 
+
+#[aoc(day3, part1)]
+pub fn solve_part1((symbols, numbers): &(HashMap<Coords, char>,  Vec<(u32, Coords)>)) -> u32 {
     numbers.iter().filter_map(|(number, (y, x))| {
         let len= number.to_string().len() as i32;
         let lt = x - 1;
@@ -46,7 +52,7 @@ pub fn solve_part1(input: &str) -> u32 {
 }
 
 #[aoc(day3, part2)]
-pub fn solve_part2(input: &str) -> usize {
+pub fn solve_part2((symbols, numbers): &(HashMap<Coords, char>,  Vec<(u32, Coords)>)) -> u32 {
     2
 }
 
