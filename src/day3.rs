@@ -80,7 +80,8 @@ pub fn solve_part2((symbols, numbers): &(HashMap<Coords, char>, Vec<(u32, Coords
         .map(|(&key, &value)| (key, value))
         .collect();
 
-    let mut gears: HashMap<Coords, Vec<u32>> = stars.iter().map(|(&key, _)| (key, Vec::new())).collect();
+    let mut gears: HashMap<Coords, Vec<u32>> =
+        stars.iter().map(|(&key, _)| (key, Vec::new())).collect();
 
     numbers.iter().for_each(|(number, pos)| {
         let nbrs = neighbours(*number, *pos, &stars);
@@ -147,7 +148,7 @@ mod tests {
         let result2 = solve_part2(&input);
         assert_eq!(result2, 6756);
     }
-    
+
     // https://www.reddit.com/r/adventofcode/comments/189q9wv/comment/kbsrno0/
     #[test]
     fn reddit2() {
