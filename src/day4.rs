@@ -5,6 +5,12 @@ pub struct Card {
     got: Vec<u32>,
 }
 
+impl Card {
+    fn score(&self) -> usize {
+        self.got.iter().filter(|&nr| self.won.contains(nr)).count()
+    }
+}
+
 #[aoc_generator(day4)]
 pub fn input_generator(input: &str) -> Vec<Card> {
     let p = parser!(lines(
@@ -13,16 +19,12 @@ pub fn input_generator(input: &str) -> Vec<Card> {
     p.parse(input).unwrap()
 }
 
-fn score(card: &Card) -> usize {
-    card.got.iter().filter(|&nr| card.won.contains(nr)).count()
-}
-
 #[aoc(day4, part1)]
 pub fn solve_part1(input: &Vec<Card>) -> usize {
     input
         .iter()
         .map(|card| {
-            let count = score(card);
+            let count = card.score();
             if count == 0 {
                 0
             } else {
@@ -38,7 +40,7 @@ pub fn solve_part2(input: &Vec<Card>) -> usize {
     input
         .iter()
         .enumerate()
-        .for_each(|(i, card)| (1..=score(card)).for_each(|j| dp[i + j] += dp[i]));
+        .for_each(|(i, card)| (1..=card.score()).for_each(|j| dp[i + j] += dp[i]));
     dp.iter().sum()
 }
 
