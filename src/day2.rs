@@ -2,13 +2,14 @@ use std::collections::HashMap;
 
 use aoc_parse::{parser, prelude::*};
 
-pub struct Round {
-    balls: Vec<(String, usize)>,
+pub struct Ball {
+    colour: String,
+    count: usize,
 }
 
 pub struct Game {
     nr: usize,
-    rounds: Vec<Round>,
+    rounds: Vec<Vec<Ball>>,
 }
 
 #[aoc_generator(day2)]
@@ -17,8 +18,8 @@ pub fn input_generator(input: &str) -> Vec<Game> {
         "Game " nr:usize ": "
         rounds:repeat_sep(
             balls:repeat_sep(
-                cnt:usize " " clr:string(alpha*) => (clr, cnt),
-                ", ") => Round { balls },
+                count:usize " " colour:string(alpha*) => Ball { colour, count },
+                ", "),
             "; ") => Game { nr, rounds }
     ));
     p.parse(input).unwrap()
@@ -27,10 +28,9 @@ pub fn input_generator(input: &str) -> Vec<Game> {
 fn possible(game: &Game, budget: &HashMap<&str, usize>) -> bool {
     game.rounds.iter().all(|round| {
         round
-            .balls
             .iter()
-            .all(|(colour, req)| match budget.get(colour.as_str()) {
-                Some(b) => b >= req,
+            .all(|ball| match budget.get(ball.colour.as_str()) {
+                Some(&b) => b >= ball.count,
                 None => false,
             })
     })
@@ -49,9 +49,9 @@ pub fn solve_part1(input: &Vec<Game>) -> usize {
 fn power(game: &Game) -> usize {
     let mut req = HashMap::new();
     game.rounds.iter().for_each(|r| {
-        r.balls.iter().for_each(|(colour, count)| {
-            let c: usize = *count;
-            let entry = req.entry(colour).or_insert(c);
+        r.iter().for_each(|ball| {
+            let c: usize = ball.count;
+            let entry = req.entry(&(*ball).colour).or_insert(c);
             if *entry < c {
                 *entry = c;
             }
