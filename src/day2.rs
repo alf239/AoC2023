@@ -1,4 +1,4 @@
-use std::{collections::HashMap, cmp::max};
+use std::{cmp::max, collections::HashMap};
 
 use aoc_parse::{parser, prelude::*};
 
