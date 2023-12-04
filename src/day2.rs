@@ -51,7 +51,7 @@ fn power(game: &Game) -> usize {
     game.rounds.iter().for_each(|r| {
         r.iter().for_each(|ball| {
             let c: usize = ball.count;
-            let entry = req.entry(&(*ball).colour).or_insert(c);
+            let entry = req.entry(&ball.colour).or_insert(c);
             if *entry < c {
                 *entry = c;
             }
