@@ -36,12 +36,10 @@ pub fn solve_part1(input: &Vec<Card>) -> usize {
 pub fn solve_part2(input: &Vec<Card>) -> usize {
     let winning: Vec<usize> = input.iter().map(|card| score(card)).collect();
     let mut dp: Vec<usize> = vec![1; input.len()];
-    winning.iter().enumerate().for_each(|(i, &won)| {
-        let scale = dp[i];
-        if won > 0 {
-            (1..=won).for_each(|j| dp[i + j] += scale)
-        }
-    });
+    winning
+        .iter()
+        .enumerate()
+        .for_each(|(i, &win)| (1..=win).for_each(|j| dp[i + j] += dp[i]));
     dp.iter().sum()
 }
 
