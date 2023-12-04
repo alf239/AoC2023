@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-
 use aoc_parse::{parser, prelude::*};
 
 pub struct Card {
-    nr: u32,
     won: Vec<u32>,
     got: Vec<u32>,
 }
@@ -11,7 +8,7 @@ pub struct Card {
 #[aoc_generator(day4)]
 pub fn input_generator(input: &str) -> Vec<Card> {
     let p = parser!(lines(
-        "Card" " "+ nr:u32 ":" " "+ won:repeat_sep(u32, " "+) " |" " "+ got:repeat_sep(u32, " "+) => Card { nr, won, got }
+        "Card" " "+ u32 ":" " "+ won:repeat_sep(u32, " "+) " |" " "+ got:repeat_sep(u32, " "+) => Card { won, got }
     ));
     p.parse(input).unwrap()
 }
