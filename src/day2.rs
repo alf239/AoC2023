@@ -18,7 +18,7 @@ pub fn input_generator(input: &str) -> Vec<Game> {
         rounds:repeat_sep(
             balls:repeat_sep(
                 cnt:usize " " clr:string(alpha*) => (clr, cnt),
-                ", ") => Round { balls},
+                ", ") => Round { balls },
             "; ") => Game { nr, rounds }
     ));
     p.parse(input).unwrap()
