@@ -35,7 +35,7 @@ pub fn solve_part1(input: &Vec<Card>) -> usize {
 #[aoc(day4, part2)]
 pub fn solve_part2(input: &Vec<Card>) -> usize {
     let winning: Vec<usize> = input.iter().map(|card| score(card)).collect();
-    let mut dp: Vec<usize> = winning.iter().map(|_| 1).collect();
+    let mut dp: Vec<usize> = vec![1; input.len()];
     winning.iter().enumerate().for_each(|(i, &won)| {
         let scale = dp[i];
         if won > 0 {
