@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, cmp::max};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -50,11 +50,8 @@ fn power(game: &Game) -> usize {
     let mut req = HashMap::new();
     game.rounds.iter().for_each(|r| {
         r.iter().for_each(|ball| {
-            let c: usize = ball.count;
-            let entry = req.entry(&ball.colour).or_insert(c);
-            if *entry < c {
-                *entry = c;
-            }
+            let entry = req.entry(&ball.colour).or_insert(ball.count);
+            *entry = max(*entry, ball.count);
         })
     });
     req.values().product()
