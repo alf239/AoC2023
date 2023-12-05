@@ -1,7 +1,4 @@
-use std::{
-    collections::VecDeque,
-    ops::{Range, RangeBounds},
-};
+use std::{collections::VecDeque, ops::Range};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -90,10 +87,9 @@ pub fn solve_part1(input: &Task) -> u32 {
 }
 
 fn step2(xs: &Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
-    let mut work: VecDeque<Range<u32>> = VecDeque::new();
-    xs.iter().for_each(|r| work.push_back(r.clone()));
+    let mut work: VecDeque<Range<u32>> = xs.iter().cloned().collect();
     let mut result = Vec::new();
-    map.iter().for_each(|m| {
+    for m in map {
         let len = work.len();
         for _ in 0..len {
             let range = work.pop_front().unwrap();
@@ -101,8 +97,8 @@ fn step2(xs: &Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
             mapped.iter().for_each(|r| result.push(r.clone()));
             leftover.iter().for_each(|r| work.push_back(r.clone()));
         }
-    });
-    work.iter().for_each(|r| result.push(r.clone()));
+    }
+    result.extend(work.iter().cloned());
     result
 }
 
