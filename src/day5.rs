@@ -1,3 +1,8 @@
+use std::{
+    collections::VecDeque,
+    ops::{Range, RangeBounds},
+};
+
 use aoc_parse::{parser, prelude::*};
 
 pub struct Map {
@@ -13,6 +18,36 @@ impl Map {
 
     fn translate(&self, x: u32) -> u32 {
         x + self.dst - self.src
+    }
+
+    fn map_range(&self, range: Range<u32>) -> (Option<Range<u32>>, Vec<Range<u32>>) {
+        if range.end <= self.src || range.start >= self.src + self.len {
+            (None, vec![range])
+        } else if range.end <= self.src + self.len && range.start >= self.src {
+            (
+                Some(self.translate(range.start)..self.translate(range.end)),
+                Vec::new(),
+            )
+        } else if range.start <= self.src && range.end >= self.src + self.len {
+            let mut leftovers = Vec::new();
+            if range.start < self.src {
+                leftovers.push(range.start..self.src);
+            }
+            if range.end > self.src + self.len {
+                leftovers.push(self.src + self.len..range.end);
+            }
+            (Some(self.dst..self.dst + self.len), leftovers)
+        } else if range.start <= self.src {
+            (
+                Some(self.dst..self.translate(range.end)),
+                vec![(range.start..self.src)],
+            )
+        } else {
+            (
+                Some(self.translate(range.start)..self.dst + self.len),
+                vec![(self.src + self.len..range.end)],
+            )
+        }
     }
 }
 
@@ -54,13 +89,41 @@ pub fn solve_part1(input: &Task) -> u32 {
         .unwrap()
 }
 
+fn step2(xs: &Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
+    let mut work: VecDeque<Range<u32>> = VecDeque::new();
+    xs.iter().for_each(|r| work.push_back(r.clone()));
+    let mut result = Vec::new();
+    map.iter().for_each(|m| {
+        let len = work.len();
+        for _ in 0..len {
+            let range = work.pop_front().unwrap();
+            let (mapped, leftover) = m.map_range(range);
+            mapped.iter().for_each(|r| result.push(r.clone()));
+            leftover.iter().for_each(|r| work.push_back(r.clone()));
+        }
+    });
+    work.iter().for_each(|r| result.push(r.clone()));
+    result
+}
+
+fn locations(seeds: &Vec<Range<u32>>, maps: &Vec<Vec<Map>>) -> Vec<Range<u32>> {
+    let mut prev = seeds.clone();
+    for m in maps {
+        prev = step2(&prev, m);
+    }
+    prev
+}
+
 #[aoc(day5, part2)]
 pub fn solve_part2(input: &Task) -> u32 {
-    input
+    let seeds: Vec<Range<u32>> = input
         .seeds
         .chunks(2)
-        .flat_map(|def| def[0]..def[0] + def[1])
-        .map(|seed| location(seed, &input.maps))
+        .map(|def| def[0]..def[0] + def[1])
+        .collect();
+    locations(&seeds, &input.maps)
+        .iter()
+        .map(|r| r.start)
         .min()
         .unwrap()
 }
