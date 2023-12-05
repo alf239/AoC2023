@@ -94,8 +94,8 @@ fn step2(xs: &Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
         for _ in 0..len {
             let range = work.pop_front().unwrap();
             let (mapped, leftover) = m.map_range(range);
-            mapped.iter().for_each(|r| result.push(r.clone()));
-            leftover.iter().for_each(|r| work.push_back(r.clone()));
+            result.extend(mapped.iter().cloned());
+            work.extend(leftover.iter().cloned());
         }
     }
     result.extend(work.iter().cloned());
