@@ -1,4 +1,4 @@
-use std::{cmp::min, collections::VecDeque, ops::Range, iter};
+use std::{cmp::min, collections::VecDeque, iter, ops::Range};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -9,6 +9,10 @@ pub struct Map {
 }
 
 impl Map {
+    fn src_end(&self) -> u32 {
+        self.src + self.len
+    }
+
     fn contains(&self, x: u32) -> bool {
         self.src <= x && self.src + self.len >= x
     }
@@ -18,15 +22,17 @@ impl Map {
     }
 
     fn contains_range(&self, range: &Range<u32>) -> bool {
-        range.end <= self.src + self.len && range.start >= self.src
+        range.end <= self.src_end() && range.start >= self.src
     }
 
     fn disjunct(&self, range: &Range<u32>) -> bool {
-        range.end <= self.src || range.start >= self.src + self.len
+        range.end <= self.src || range.start >= self.src_end()
     }
 
-    fn translate_range<C>(&self, range: Range<u32>, leftovers: &mut C) -> Option<Range<u32>> 
-    where C: Extend<Range<u32>> {
+    fn translate_range<C>(&self, range: Range<u32>, leftovers: &mut C) -> Option<Range<u32>>
+    where
+        C: Extend<Range<u32>>,
+    {
         if self.disjunct(&range) {
             leftovers.extend(iter::once(range));
             None
@@ -36,12 +42,12 @@ impl Map {
             if range.start < self.src {
                 leftovers.extend(iter::once(range.start..self.src));
             }
-            if range.end > self.src + self.len {
-                leftovers.extend(iter::once(self.src + self.len..range.end));
+            if range.end > self.src_end() {
+                leftovers.extend(iter::once(self.src_end()..range.end));
             }
             Some(self.dst..self.dst + min(self.len, range.end - self.src))
         } else {
-            leftovers.extend(iter::once(self.src + self.len..range.end));
+            leftovers.extend(iter::once(self.src_end()..range.end));
             Some(self.translate(range.start)..self.dst + self.len)
         }
     }
