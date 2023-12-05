@@ -31,7 +31,7 @@ impl Map {
             if range.end > end {
                 trimmings.extend(iter::once(end..range.end));
             }
-            Some(start..end)
+            Some(self.translate(&start)..self.translate(&end))
         } else {
             trimmings.extend(iter::once(range));
             None
