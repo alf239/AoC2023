@@ -48,12 +48,12 @@ pub fn solve_part1(input: &Vec<Game>) -> usize {
 
 fn power(game: &Game) -> usize {
     let mut req = HashMap::new();
-    game.rounds.iter().for_each(|r| {
-        r.iter().for_each(|ball| {
+    for r in game.rounds.iter() {
+        for ball in r.iter() {
             let entry = req.entry(&ball.colour).or_insert(ball.count);
             *entry = max(*entry, ball.count);
-        })
-    });
+        }
+    }
     req.values().product()
 }
 
