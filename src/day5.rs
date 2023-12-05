@@ -1,54 +1,48 @@
-use std::{cmp::min, collections::VecDeque, iter, ops::Range};
+use std::{
+    cmp::{max, min},
+    collections::VecDeque,
+    iter,
+    ops::Range,
+};
 
 use aoc_parse::{parser, prelude::*};
 
 pub struct Map {
     dst: u32,
-    src: u32,
-    len: u32,
+    src: Range<u32>,
 }
 
 impl Map {
     fn src_end(&self) -> u32 {
-        self.src + self.len
+        self.src.end
     }
 
-    fn contains(&self, x: u32) -> bool {
-        self.src <= x && self.src + self.len >= x
+    fn contains(&self, x: &u32) -> bool {
+        self.src.contains(x)
     }
 
-    fn translate(&self, x: u32) -> u32 {
-        x + self.dst - self.src
-    }
-
-    fn contains_range(&self, range: &Range<u32>) -> bool {
-        range.end <= self.src_end() && range.start >= self.src
-    }
-
-    fn disjunct(&self, range: &Range<u32>) -> bool {
-        range.end <= self.src || range.start >= self.src_end()
+    fn translate(&self, x: &u32) -> u32 {
+        x + self.dst - self.src.start
     }
 
     fn translate_range<C>(&self, range: Range<u32>, trimmings: &mut C) -> Option<Range<u32>>
     where
         C: Extend<Range<u32>>,
     {
-        if self.disjunct(&range) {
+        let start = max(self.src.start, range.start);
+        let end = min(self.src.end, range.end);
+
+        if start > end {
             trimmings.extend(iter::once(range));
             None
-        } else if self.contains_range(&range) {
-            Some(self.translate(range.start)..self.translate(range.end))
-        } else if range.contains(&self.src) {
-            if range.start < self.src {
-                trimmings.extend(iter::once(range.start..self.src));
+        } else {
+            if range.start < self.src.start {
+                trimmings.extend(iter::once(range.start..self.src.start));
             }
             if range.end > self.src_end() {
-                trimmings.extend(iter::once(self.src_end()..range.end));
+                trimmings.extend(iter::once(self.src.end..range.end));
             }
-            Some(self.dst..self.dst + min(self.len, range.end - self.src))
-        } else {
-            trimmings.extend(iter::once(self.src_end()..range.end));
-            Some(self.translate(range.start)..self.dst + self.len)
+            Some(start..end)
         }
     }
 }
@@ -65,7 +59,7 @@ pub fn input_generator(input: &str) -> Task {
         line("")
         maps:sections(
             line(string(any_char+))
-            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src, len })
+            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src: (src..src+len) })
             => maps
         )
         => Task { seeds, maps }
@@ -75,8 +69,8 @@ pub fn input_generator(input: &str) -> Task {
 
 fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
     maps.iter().fold(seed, |x, rules| {
-        match rules.iter().find(|&m| m.contains(x)) {
-            Some(m) => m.translate(x),
+        match rules.iter().find(|&m| m.contains(&x)) {
+            Some(m) => m.translate(&x),
             None => x,
         }
     })
