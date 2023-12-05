@@ -38,7 +38,7 @@ pub fn input_generator(input: &str) -> Task {
 
 fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
     maps.iter().fold(seed, |x, rules| {
-        match rules.iter().find(|m| m.covers(x)) {
+        match rules.iter().find(|&m| m.covers(x)) {
             Some(m) => m.translate(x),
             None => x,
         }
