@@ -56,13 +56,11 @@ pub fn solve_part1(input: &Task) -> u32 {
 
 #[aoc(day5, part2)]
 pub fn solve_part2(input: &Task) -> u32 {
-    let s = &input.seeds;
-    let seeds: Vec<u32> = (0..s.len() / 2)
-        .flat_map(|i| s[i * 2]..s[i * 2] + s[i * 2 + 1])
-        .collect();
-    seeds
-        .iter()
-        .map(|&seed| location(seed, &input.maps))
+    input
+        .seeds
+        .chunks(2)
+        .flat_map(|def| def[0]..def[0] + def[1])
+        .map(|seed| location(seed, &input.maps))
         .min()
         .unwrap()
 }
