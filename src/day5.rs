@@ -44,6 +44,10 @@ pub struct Task {
     maps: Vec<Vec<Map>>,
 }
 
+fn range(start: u32, len: u32) -> Range<u32> {
+    start..start + len
+}
+
 #[aoc_generator(day5)]
 pub fn input_generator(input: &str) -> Task {
     let p = parser!(
@@ -51,7 +55,7 @@ pub fn input_generator(input: &str) -> Task {
         line("")
         maps:sections(
             line(string(any_char+))
-            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src: (src..src+len) })
+            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src: range(src, len) })
             => maps
         )
         => Task { seeds, maps }
@@ -105,7 +109,7 @@ pub fn solve_part2(input: &Task) -> u32 {
     let seeds: Vec<Range<u32>> = input
         .seeds
         .chunks(2)
-        .map(|def| def[0]..def[0] + def[1])
+        .map(|def| range(def[0], def[1]))
         .collect();
     locations(&seeds, &input.maps)
         .iter()
