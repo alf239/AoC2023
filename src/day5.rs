@@ -13,14 +13,6 @@ pub struct Map {
 }
 
 impl Map {
-    fn src_end(&self) -> u32 {
-        self.src.end
-    }
-
-    fn contains(&self, x: &u32) -> bool {
-        self.src.contains(x)
-    }
-
     fn translate(&self, x: &u32) -> u32 {
         x + self.dst - self.src.start
     }
@@ -32,17 +24,17 @@ impl Map {
         let start = max(self.src.start, range.start);
         let end = min(self.src.end, range.end);
 
-        if start > end {
-            trimmings.extend(iter::once(range));
-            None
-        } else {
-            if range.start < self.src.start {
-                trimmings.extend(iter::once(range.start..self.src.start));
+        if start < end {
+            if range.start < start {
+                trimmings.extend(iter::once(range.start..start));
             }
-            if range.end > self.src_end() {
-                trimmings.extend(iter::once(self.src.end..range.end));
+            if range.end > end {
+                trimmings.extend(iter::once(end..range.end));
             }
             Some(start..end)
+        } else {
+            trimmings.extend(iter::once(range));
+            None
         }
     }
 }
@@ -69,7 +61,7 @@ pub fn input_generator(input: &str) -> Task {
 
 fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
     maps.iter().fold(seed, |x, rules| {
-        match rules.iter().find(|&m| m.contains(&x)) {
+        match rules.iter().find(|&m| m.src.contains(&x)) {
             Some(m) => m.translate(&x),
             None => x,
         }
