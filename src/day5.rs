@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, ops::Range};
+use std::{cmp::min, collections::VecDeque, ops::Range};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -9,7 +9,7 @@ pub struct Map {
 }
 
 impl Map {
-    fn covers(&self, x: u32) -> bool {
+    fn contains(&self, x: u32) -> bool {
         self.src <= x && self.src + self.len >= x
     }
 
@@ -17,15 +17,23 @@ impl Map {
         x + self.dst - self.src
     }
 
+    fn contains_range(&self, range: &Range<u32>) -> bool {
+        range.end <= self.src + self.len && range.start >= self.src
+    }
+
+    fn disjunct(&self, range: &Range<u32>) -> bool {
+        range.end <= self.src || range.start >= self.src + self.len
+    }
+
     fn map_range(&self, range: Range<u32>) -> (Option<Range<u32>>, Vec<Range<u32>>) {
-        if range.end <= self.src || range.start >= self.src + self.len {
+        if self.disjunct(&range) {
             (None, vec![range])
-        } else if range.end <= self.src + self.len && range.start >= self.src {
+        } else if self.contains_range(&range) {
             (
                 Some(self.translate(range.start)..self.translate(range.end)),
                 Vec::new(),
             )
-        } else if range.start <= self.src && range.end >= self.src + self.len {
+        } else if range.contains(&self.src) {
             let mut leftovers = Vec::new();
             if range.start < self.src {
                 leftovers.push(range.start..self.src);
@@ -33,11 +41,9 @@ impl Map {
             if range.end > self.src + self.len {
                 leftovers.push(self.src + self.len..range.end);
             }
-            (Some(self.dst..self.dst + self.len), leftovers)
-        } else if range.start <= self.src {
             (
-                Some(self.dst..self.translate(range.end)),
-                vec![(range.start..self.src)],
+                Some(self.dst..self.dst + min(self.len, range.end - self.src)),
+                leftovers,
             )
         } else {
             (
@@ -69,11 +75,12 @@ pub fn input_generator(input: &str) -> Task {
 }
 
 fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
-    maps.iter()
-        .fold(seed, |x, rules| match rules.iter().find(|&m| m.covers(x)) {
+    maps.iter().fold(seed, |x, rules| {
+        match rules.iter().find(|&m| m.contains(x)) {
             Some(m) => m.translate(x),
             None => x,
-        })
+        }
+    })
 }
 
 #[aoc(day5, part1)]
