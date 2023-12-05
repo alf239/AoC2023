@@ -25,7 +25,7 @@ impl Map {
         range.end <= self.src || range.start >= self.src + self.len
     }
 
-    fn map_range(&self, range: Range<u32>) -> (Option<Range<u32>>, Vec<Range<u32>>) {
+    fn translate_range(&self, range: Range<u32>) -> (Option<Range<u32>>, Vec<Range<u32>>) {
         if self.disjunct(&range) {
             (None, vec![range])
         } else if self.contains_range(&range) {
@@ -100,7 +100,7 @@ fn step2(xs: Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
         let len = work.len();
         for _ in 0..len {
             let range = work.pop_front().unwrap();
-            let (mapped, leftover) = m.map_range(range);
+            let (mapped, leftover) = m.translate_range(range);
             result.extend(mapped);
             work.extend(leftover);
         }
