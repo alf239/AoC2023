@@ -29,25 +29,25 @@ impl Map {
         range.end <= self.src || range.start >= self.src_end()
     }
 
-    fn translate_range<C>(&self, range: Range<u32>, leftovers: &mut C) -> Option<Range<u32>>
+    fn translate_range<C>(&self, range: Range<u32>, trimmings: &mut C) -> Option<Range<u32>>
     where
         C: Extend<Range<u32>>,
     {
         if self.disjunct(&range) {
-            leftovers.extend(iter::once(range));
+            trimmings.extend(iter::once(range));
             None
         } else if self.contains_range(&range) {
             Some(self.translate(range.start)..self.translate(range.end))
         } else if range.contains(&self.src) {
             if range.start < self.src {
-                leftovers.extend(iter::once(range.start..self.src));
+                trimmings.extend(iter::once(range.start..self.src));
             }
             if range.end > self.src_end() {
-                leftovers.extend(iter::once(self.src_end()..range.end));
+                trimmings.extend(iter::once(self.src_end()..range.end));
             }
             Some(self.dst..self.dst + min(self.len, range.end - self.src))
         } else {
-            leftovers.extend(iter::once(self.src_end()..range.end));
+            trimmings.extend(iter::once(self.src_end()..range.end));
             Some(self.translate(range.start)..self.dst + self.len)
         }
     }
