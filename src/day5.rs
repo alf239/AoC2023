@@ -28,21 +28,20 @@ pub fn input_generator(input: &str) -> Task {
         line("")
         maps:sections(
             line(string(any_char+))
-            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src, len }) 
+            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src, len })
             => maps
-        ) 
+        )
         => Task { seeds, maps }
     );
     p.parse(input).unwrap()
 }
 
 fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
-    maps.iter().fold(seed, |x, rules| {
-        match rules.iter().find(|&m| m.covers(x)) {
+    maps.iter()
+        .fold(seed, |x, rules| match rules.iter().find(|&m| m.covers(x)) {
             Some(m) => m.translate(x),
             None => x,
-        }
-    })
+        })
 }
 
 #[aoc(day5, part1)]
@@ -58,8 +57,8 @@ pub fn solve_part1(input: &Task) -> u32 {
 #[aoc(day5, part2)]
 pub fn solve_part2(input: &Task) -> u32 {
     let s = &input.seeds;
-    let seeds: Vec<u32> = (0..s.len()/2)
-        .flat_map(|i| (s[i * 2]..s[i * 2] + s[i * 2 + 1]))
+    let seeds: Vec<u32> = (0..s.len() / 2)
+        .flat_map(|i| s[i * 2]..s[i * 2] + s[i * 2 + 1])
         .collect();
     seeds
         .iter()
