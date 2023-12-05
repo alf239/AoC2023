@@ -16,14 +16,9 @@ impl Map {
     }
 }
 
-pub struct Section {
-    header: String,
-    maps: Vec<Map>,
-}
-
 pub struct Task {
     seeds: Vec<u32>,
-    maps: Vec<Section>,
+    maps: Vec<Vec<Map>>,
 }
 
 #[aoc_generator(day5)]
@@ -32,18 +27,18 @@ pub fn input_generator(input: &str) -> Task {
         seeds:line("seeds: " repeat_sep(u32, " "+))
         line("")
         maps:sections(
-            header:line(string(any_char+))
-            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src, len })
-            => Section { header, maps }
-        )
+            line(string(any_char+))
+            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src, len }) 
+            => maps
+        ) 
         => Task { seeds, maps }
     );
     p.parse(input).unwrap()
 }
 
-fn location(seed: u32, maps: &Vec<Section>) -> u32 {
+fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
     maps.iter().fold(seed, |x, rules| {
-        match rules.maps.iter().find(|m| m.covers(x)) {
+        match rules.iter().find(|m| m.covers(x)) {
             Some(m) => m.translate(x),
             None => x,
         }
