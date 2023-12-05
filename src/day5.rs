@@ -1,4 +1,4 @@
-use std::{cmp::min, collections::VecDeque, ops::Range};
+use std::{cmp::min, collections::VecDeque, ops::Range, iter};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -25,31 +25,24 @@ impl Map {
         range.end <= self.src || range.start >= self.src + self.len
     }
 
-    fn translate_range(&self, range: Range<u32>) -> (Option<Range<u32>>, Vec<Range<u32>>) {
+    fn translate_range<C>(&self, range: Range<u32>, leftovers: &mut C) -> Option<Range<u32>> 
+    where C: Extend<Range<u32>> {
         if self.disjunct(&range) {
-            (None, vec![range])
+            leftovers.extend(iter::once(range));
+            None
         } else if self.contains_range(&range) {
-            (
-                Some(self.translate(range.start)..self.translate(range.end)),
-                Vec::new(),
-            )
+            Some(self.translate(range.start)..self.translate(range.end))
         } else if range.contains(&self.src) {
-            let mut leftovers = Vec::new();
             if range.start < self.src {
-                leftovers.push(range.start..self.src);
+                leftovers.extend(iter::once(range.start..self.src));
             }
             if range.end > self.src + self.len {
-                leftovers.push(self.src + self.len..range.end);
+                leftovers.extend(iter::once(self.src + self.len..range.end));
             }
-            (
-                Some(self.dst..self.dst + min(self.len, range.end - self.src)),
-                leftovers,
-            )
+            Some(self.dst..self.dst + min(self.len, range.end - self.src))
         } else {
-            (
-                Some(self.translate(range.start)..self.dst + self.len),
-                vec![(self.src + self.len..range.end)],
-            )
+            leftovers.extend(iter::once(self.src + self.len..range.end));
+            Some(self.translate(range.start)..self.dst + self.len)
         }
     }
 }
@@ -93,16 +86,14 @@ pub fn solve_part1(input: &Task) -> u32 {
         .unwrap()
 }
 
-fn step2(xs: Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
+fn bulk_translate(xs: Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
     let mut work: VecDeque<Range<u32>> = xs.into_iter().collect();
     let mut result = Vec::new();
     for m in map {
         let len = work.len();
         for _ in 0..len {
             let range = work.pop_front().unwrap();
-            let (mapped, leftover) = m.translate_range(range);
-            result.extend(mapped);
-            work.extend(leftover);
+            result.extend(m.translate_range(range, &mut work));
         }
     }
     result.extend(work);
@@ -112,7 +103,7 @@ fn step2(xs: Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
 fn locations(seeds: &Vec<Range<u32>>, maps: &Vec<Vec<Map>>) -> Vec<Range<u32>> {
     let mut prev = seeds.iter().cloned().collect();
     for m in maps {
-        prev = step2(prev, m);
+        prev = bulk_translate(prev, m);
     }
     prev
 }
