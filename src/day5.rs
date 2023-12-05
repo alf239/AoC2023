@@ -86,26 +86,26 @@ pub fn solve_part1(input: &Task) -> u32 {
         .unwrap()
 }
 
-fn step2(xs: &Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
-    let mut work: VecDeque<Range<u32>> = xs.iter().cloned().collect();
+fn step2(xs: Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
+    let mut work: VecDeque<Range<u32>> = xs.into_iter().collect();
     let mut result = Vec::new();
     for m in map {
         let len = work.len();
         for _ in 0..len {
             let range = work.pop_front().unwrap();
             let (mapped, leftover) = m.map_range(range);
-            result.extend(mapped.iter().cloned());
-            work.extend(leftover.iter().cloned());
+            result.extend(mapped);
+            work.extend(leftover);
         }
     }
-    result.extend(work.iter().cloned());
+    result.extend(work);
     result
 }
 
 fn locations(seeds: &Vec<Range<u32>>, maps: &Vec<Vec<Map>>) -> Vec<Range<u32>> {
-    let mut prev = seeds.clone();
+    let mut prev = seeds.iter().cloned().collect();
     for m in maps {
-        prev = step2(&prev, m);
+        prev = step2(prev, m);
     }
     prev
 }
