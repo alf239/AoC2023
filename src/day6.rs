@@ -1,5 +1,3 @@
-use std::cmp::{max, min};
-
 use aoc_parse::{parser, prelude::*};
 
 #[aoc_generator(day6)]
@@ -12,29 +10,29 @@ pub fn input_generator(input: &str) -> (Vec<u32>, Vec<u32>) {
 }
 
 fn number_of_ways(t: u64, d: u64) -> u64 {
-    // x * (t - x) = d => x^ 2 - tx + d = 0
-    let discriminant = ((t * t) as i64) - 4 * d as i64;
-    if discriminant > 0 {
-        let sqrt_disc = (discriminant as f64).sqrt();
+    let mid = t / 2;
+    if mid * (t - t / 2) <= d {
+        0
+    } else {
+        let discriminant = ((t * t) as f64) - 4.0 * d as f64;
+        let sqrt_disc = discriminant.sqrt();
         let root1 = (t as f64 - sqrt_disc) / 2.0;
         let root2 = (t as f64 + sqrt_disc) / 2.0;
 
-        let first = max(0, (root1 + 1.0).floor() as i64);
-        let last = min(t as i64, (root2 - 1.0).ceil() as i64);
+        let first = (root1 + 1.0).floor();
+        let last = (root2 - 1.0).ceil();
 
         if last >= first {
-            (1 + last - first) as u64
+            (1.0 + last - first) as u64
         } else {
             0
         }
-    } else {
-        0
     }
 }
 
 fn concat(nrs: &Vec<u32>) -> u64 {
     nrs.iter().fold(0, |acc, &t| {
-        acc * 10u64.pow(t.to_string().len() as u32) + (t as u64)
+        acc * 10u64.pow(t.to_string().len() as u32) + t as u64
     })
 }
 
