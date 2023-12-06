@@ -16,24 +16,15 @@ fn number_of_ways(t: u64, d: u64) -> u64 {
     let discriminant = ((t * t) as i64) - 4 * d as i64;
     if discriminant > 0 {
         let sqrt_disc = (discriminant as f64).sqrt();
-        let peak = (t + 1 ) / 2;
+        let peak = (t + 1) / 2;
         let t1 = (t as f64 - sqrt_disc) / 2.0;
         let t2 = (t as f64 + sqrt_disc) / 2.0;
 
         let x1 = max(0, t1.floor().round() as i64) as u64;
         let x2 = min(t, t2.ceil().round() as u64) as u64;
 
-        let first = (x1..=peak)
-            .map(|j| (j, j * (t - j)))
-            .find(|&(_, d1)| d1 > d)
-            .map(|(j, _)| j)
-            .unwrap();
-        let last = (peak - 1..=x2)
-            .rev()
-            .map(|j| (j, j * (t - j)))
-            .find(|&(_, d1)| d1 > d)
-            .map(|(j, _)| j)
-            .unwrap();
+        let first = (x1..=peak).find(|j| j * (t - j) > d).unwrap();
+        let last = (peak - 1..=x2).rev().find(|j| j * (t - j) > d).unwrap();
 
         1 + last - first
     } else {
