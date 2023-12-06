@@ -14,7 +14,7 @@ fn number_of_ways(t: u64, d: u64) -> u64 {
     if mid * (t - t / 2) <= d {
         0
     } else {
-        let discriminant = ((t * t) as f64) - 4.0 * d as f64;
+        let discriminant = (t * t) as f64 - 4.0 * d as f64;
         let sqrt_disc = discriminant.sqrt();
         let root1 = (t as f64 - sqrt_disc) / 2.0;
         let root2 = (t as f64 + sqrt_disc) / 2.0;
