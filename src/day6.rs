@@ -10,7 +10,10 @@ pub fn input_generator(input: &str) -> (Vec<u32>, Vec<u32>) {
 }
 
 fn number_of_ways(t: u64, d: u64) -> u64 {
-    (0..=t).map(|j| j * (t - j)).filter(|&d1| d1 > d).count() as u64
+    let first = (0..=t).map(|j| (j, j * (t - j))).find(|&(_, d1)| d1 > d).map(|(j, _)| j);
+    let last = (0..=t).rev().map(|j| (j, j * (t - j))).find(|&(_, d1)| d1 > d).map(|(j, _)| j);
+
+    first.map_or(0u64, |f| last.map_or(0u64, |l| 1 + l - f))
 }
 
 fn concat(nrs: &Vec<u32>) -> u64 {
