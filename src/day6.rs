@@ -13,18 +13,32 @@ pub fn input_generator(input: &str) -> (Vec<u32>, Vec<u32>) {
 
 fn number_of_ways(t: u64, d: u64) -> u64 {
     // x * (t - x) = d => x^ 2 - tx + d = 0
-    let discriminant = t * t - 4 * d;
-    let sqrt_disc = (discriminant as f64).sqrt();
-    let t1 = (t as f64 - sqrt_disc) / 2.0;
-    let t2 = (t as f64 + sqrt_disc) / 2.0;
+    let discriminant = ((t * t) as i64) - 4 * d as i64;
+    if discriminant > 0 {
+        let sqrt_disc = (discriminant as f64).sqrt();
+        let peak = (t + 1 ) / 2;
+        let t1 = (t as f64 - sqrt_disc) / 2.0;
+        let t2 = (t as f64 + sqrt_disc) / 2.0;
 
-    let x1 = max(0, t1.floor().round() as i64) as u64;
-    let x2 = min(t, t2.ceil().round() as u64) as u64;
+        let x1 = max(0, t1.floor().round() as i64) as u64;
+        let x2 = min(t, t2.ceil().round() as u64) as u64;
 
-    let first = (x1..=t).map(|j| (j, j * (t - j))).find(|&(_, d1)| d1 > d).map(|(j, _)| j);
-    let last = (0..=x2).rev().map(|j| (j, j * (t - j))).find(|&(_, d1)| d1 > d).map(|(j, _)| j);
+        let first = (x1..=peak)
+            .map(|j| (j, j * (t - j)))
+            .find(|&(_, d1)| d1 > d)
+            .map(|(j, _)| j)
+            .unwrap();
+        let last = (peak - 1..=x2)
+            .rev()
+            .map(|j| (j, j * (t - j)))
+            .find(|&(_, d1)| d1 > d)
+            .map(|(j, _)| j)
+            .unwrap();
 
-    first.map_or(0u64, |f| last.map_or(0u64, |l| 1 + l - f))
+        1 + last - first
+    } else {
+        0
+    }
 }
 
 fn concat(nrs: &Vec<u32>) -> u64 {
