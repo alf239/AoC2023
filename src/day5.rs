@@ -8,18 +8,18 @@ use std::{
 use aoc_parse::{parser, prelude::*};
 
 pub struct Map {
-    dst: u32,
-    src: Range<u32>,
+    dst: u64,
+    src: Range<u64>,
 }
 
 impl Map {
-    fn translate(&self, x: &u32) -> u32 {
+    fn translate(&self, x: &u64) -> u64 {
         x + self.dst - self.src.start
     }
 
-    fn translate_range<C>(&self, range: Range<u32>, trimmings: &mut C) -> Option<Range<u32>>
+    fn translate_range<C>(&self, range: Range<u64>, trimmings: &mut C) -> Option<Range<u64>>
     where
-        C: Extend<Range<u32>>,
+        C: Extend<Range<u64>>,
     {
         let start = max(self.src.start, range.start);
         let end = min(self.src.end, range.end);
@@ -40,22 +40,22 @@ impl Map {
 }
 
 pub struct Task {
-    seeds: Vec<u32>,
+    seeds: Vec<u64>,
     maps: Vec<Vec<Map>>,
 }
 
-fn range(start: u32, len: u32) -> Range<u32> {
+fn range(start: u64, len: u64) -> Range<u64> {
     start..start + len
 }
 
 #[aoc_generator(day5)]
 pub fn input_generator(input: &str) -> Task {
     let p = parser!(
-        seeds:line("seeds: " repeat_sep(u32, " "+))
+        seeds:line("seeds: " repeat_sep(u64, " "+))
         line("")
         maps:sections(
             line(string(any_char+))
-            maps:lines(dst:u32 " " src:u32 " " len:u32 => Map { dst, src: range(src, len) })
+            maps:lines(dst:u64 " " src:u64 " " len:u64 => Map { dst, src: range(src, len) })
             => maps
         )
         => Task { seeds, maps }
@@ -63,7 +63,7 @@ pub fn input_generator(input: &str) -> Task {
     p.parse(input).unwrap()
 }
 
-fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
+fn location(seed: u64, maps: &Vec<Vec<Map>>) -> u64 {
     maps.iter().fold(seed, |x, rules| {
         match rules.iter().find(|&m| m.src.contains(&x)) {
             Some(m) => m.translate(&x),
@@ -73,7 +73,7 @@ fn location(seed: u32, maps: &Vec<Vec<Map>>) -> u32 {
 }
 
 #[aoc(day5, part1)]
-pub fn solve_part1(input: &Task) -> u32 {
+pub fn solve_part1(input: &Task) -> u64 {
     input
         .seeds
         .iter()
@@ -82,8 +82,8 @@ pub fn solve_part1(input: &Task) -> u32 {
         .unwrap()
 }
 
-fn bulk_translate(xs: Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
-    let mut work: VecDeque<Range<u32>> = xs.into_iter().collect();
+fn bulk_translate(xs: Vec<Range<u64>>, map: &Vec<Map>) -> Vec<Range<u64>> {
+    let mut work: VecDeque<Range<u64>> = xs.into_iter().collect();
     let mut result = Vec::new();
     for m in map {
         let len = work.len();
@@ -96,7 +96,7 @@ fn bulk_translate(xs: Vec<Range<u32>>, map: &Vec<Map>) -> Vec<Range<u32>> {
     result
 }
 
-fn locations(seeds: &Vec<Range<u32>>, maps: &Vec<Vec<Map>>) -> Vec<Range<u32>> {
+fn locations(seeds: &Vec<Range<u64>>, maps: &Vec<Vec<Map>>) -> Vec<Range<u64>> {
     let mut prev = seeds.iter().cloned().collect();
     for m in maps {
         prev = bulk_translate(prev, m);
@@ -105,8 +105,8 @@ fn locations(seeds: &Vec<Range<u32>>, maps: &Vec<Vec<Map>>) -> Vec<Range<u32>> {
 }
 
 #[aoc(day5, part2)]
-pub fn solve_part2(input: &Task) -> u32 {
-    let seeds: Vec<Range<u32>> = input
+pub fn solve_part2(input: &Task) -> u64 {
+    let seeds: Vec<Range<u64>> = input
         .seeds
         .chunks(2)
         .map(|def| range(def[0], def[1]))

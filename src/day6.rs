@@ -20,8 +20,8 @@ fn number_of_ways(t: u64, d: u64) -> u64 {
         let t1 = (t as f64 - sqrt_disc) / 2.0;
         let t2 = (t as f64 + sqrt_disc) / 2.0;
 
-        let x1 = max(0, t1.floor().round() as i64) as u64;
-        let x2 = min(t, t2.ceil().round() as u64);
+        let x1 = max(0, t1.ceil().round() as i64) as u64;
+        let x2 = min(t, t2.floor().round() as u64);
 
         let first = (x1..=peak).find(|j| j * (t - j) > d).unwrap();
         let last = (peak - 1..=x2).rev().find(|j| j * (t - j) > d).unwrap();
