@@ -26,7 +26,7 @@ pub fn solve_part1((times, distances): &(Vec<u32>, Vec<u32>)) -> u64 {
 pub fn solve_part2((times, distances): &(Vec<u32>, Vec<u32>)) -> u64 {
     let time = concat(times);
     let distance = concat(distances);
-    println!("{}, {}", time, distance);
+    // println!("{}, {}", time, distance);
     number_of_ways(time, distance)
 }
 
