@@ -11,7 +11,7 @@ pub fn input_generator(input: &str) -> (Vec<u32>, Vec<u32>) {
 
 fn number_of_ways(t: u64, d: u64) -> u64 {
     let mid = t / 2;
-    if mid * (t - t / 2) <= d {
+    if mid * (t - mid) <= d {
         0
     } else {
         let discriminant = (t * t) as f64 - 4.0 * d as f64;
