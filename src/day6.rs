@@ -19,11 +19,11 @@ fn number_of_ways(t: u64, d: u64) -> u64 {
         let root1 = (t as f64 - sqrt_disc) / 2.0;
         let root2 = (t as f64 + sqrt_disc) / 2.0;
 
-        let first = max(0, (root1 + 1.0).floor() as i64) as u64;
-        let last = min(t, (root2 - 1.0).ceil() as u64);
+        let first = max(0, (root1 + 1.0).floor() as i64);
+        let last = min(t as i64, (root2 - 1.0).ceil() as i64);
 
         if last >= first {
-            1 + last - first
+            (1 + last - first) as u64
         } else {
             0
         }
