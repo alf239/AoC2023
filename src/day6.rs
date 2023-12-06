@@ -14,12 +14,18 @@ fn number_of_ways(t: u64, d: u64) -> u64 {
 }
 
 fn concat(nrs: &Vec<u32>) -> u64 {
-    nrs.iter().fold(0, |acc, &t| acc * 10u64.pow(t.to_string().len() as u32) + (t as u64))
+    nrs.iter().fold(0, |acc, &t| {
+        acc * 10u64.pow(t.to_string().len() as u32) + (t as u64)
+    })
 }
 
 #[aoc(day6, part1)]
 pub fn solve_part1((times, distances): &(Vec<u32>, Vec<u32>)) -> u64 {
-    times.iter().zip(distances).map(|(&t, &d)| number_of_ways(t as u64, d as u64)).product()
+    times
+        .iter()
+        .zip(distances)
+        .map(|(&t, &d)| number_of_ways(t as u64, d as u64))
+        .product()
 }
 
 #[aoc(day6, part2)]

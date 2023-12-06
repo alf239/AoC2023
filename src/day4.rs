@@ -37,7 +37,7 @@ pub fn solve_part1(input: &Vec<Card>) -> usize {
 #[aoc(day4, part2)]
 pub fn solve_part2(input: &Vec<Card>) -> usize {
     let mut dp: Vec<usize> = vec![1; input.len()];
-    for (i, card) in  input.iter().enumerate() {
+    for (i, card) in input.iter().enumerate() {
         for j in 1..=card.score() {
             dp[i + j] += dp[i];
         }
