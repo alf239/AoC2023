@@ -14,7 +14,7 @@ pub fn input_generator(input: &str) -> (Vec<u32>, Vec<u32>) {
 fn number_of_ways(t: u64, d: u64) -> u64 {
     // x * (t - x) = d => x^ 2 - tx + d = 0
     let discriminant = ((t * t) as i64) - 4 * d as i64;
-    if discriminant > 0 {
+    if discriminant >= 0 {
         let sqrt_disc = (discriminant as f64).sqrt();
         let peak = (t + 1) / 2;
         let t1 = (t as f64 - sqrt_disc) / 2.0;
