@@ -51,11 +51,16 @@ fn card_counts(cards: &str, hand: &str) -> ([usize; 13], u64) {
     (counts, value)
 }
 
-fn hand_rank(hand: &str) -> (HandRank, u64) {
-    let (mut counts, value) = card_counts(CARDS, hand);
+fn top_two(mut counts: [usize; 13]) -> (usize, usize) {
     counts.sort_unstable();
     let x1 = counts[counts.len() - 1];
     let x2 = counts[counts.len() - 2];
+    (x1, x2)
+}
+
+fn hand_rank(hand: &str) -> (HandRank, u64) {
+    let (counts, value) = card_counts(CARDS, hand);
+    let (x1, x2) = top_two(counts);
     (rank_for(x1, x2, 0), value)
 }
 
@@ -63,9 +68,7 @@ fn hand_rank2(hand: &str) -> (HandRank, u64) {
     let (mut counts, value) = card_counts(CARDS2, hand);
     let j = counts[0];
     counts[0] = 0;
-    counts.sort_unstable();
-    let x1 = counts[counts.len() - 1];
-    let x2 = counts[counts.len() - 2];
+    let (x1, x2) = top_two(counts);
     (rank_for(x1, x2, j), value)
 }
 
