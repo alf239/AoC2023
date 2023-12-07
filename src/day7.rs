@@ -81,11 +81,10 @@ pub fn input_generator(input: &str) -> Vec<(String, u64)> {
     p.parse(input).unwrap()
 }
 
-#[aoc(day7, part1)]
-fn solve_part1(input: &Vec<(String, u64)>) -> u64 {
+fn solve(input: &Vec<(String, u64)>, score: fn(&str)->(u32, u64)) -> u64 {
     let mut work: Vec<((u32, u64), u64)> = input
         .iter()
-        .map(|(hand, stake)| (hand_rank(hand), *stake))
+        .map(|(hand, stake)| (score(hand), *stake))
         .collect();
     work.sort_by_key(|(rank, _)| *rank);
 
@@ -95,18 +94,14 @@ fn solve_part1(input: &Vec<(String, u64)>) -> u64 {
         .sum()
 }
 
+#[aoc(day7, part1)]
+fn solve_part1(input: &Vec<(String, u64)>) -> u64 {
+    solve(input, hand_rank)
+}
+
 #[aoc(day7, part2)]
 fn solve_part2(input: &Vec<(String, u64)>) -> u64 {
-    let mut work: Vec<((u32, u64), u64)> = input
-        .iter()
-        .map(|(hand, stake)| (hand_rank2(hand), *stake))
-        .collect();
-    work.sort_by_key(|(rank, _)| *rank);
-
-    work.iter()
-        .enumerate()
-        .map(|(i, (_, stake))| stake * (1 + i as u64))
-        .sum()
+    solve(input, hand_rank2)
 }
 
 #[cfg(test)]
