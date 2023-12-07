@@ -35,7 +35,9 @@ fn rank_for(top: usize, snd: usize, j: usize) -> HandRank {
 
 fn card_rank(cards: &str, card: char) -> usize {
     cards
-        .char_indices()
+        .chars()
+        .rev()
+        .enumerate()
         .find_map(|(i, c)| if c == card { Some(i) } else { None })
         .unwrap()
 }
@@ -44,7 +46,7 @@ fn card_counts(cards: &str, hand: &str) -> ([usize; 13], u64) {
     let mut counts: [usize; N] = [0; N];
     let mut value: u64 = 0;
     for c in hand.chars() {
-        let card = N - card_rank(cards, c) - 1;
+        let card = card_rank(cards, c);
         counts[card] += 1;
         value = value * N as u64 + card as u64;
     }
