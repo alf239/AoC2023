@@ -4,6 +4,35 @@ const CARDS: &str = "AKQJT98765432";
 const CARDS2: &str = "AKQT98765432J";
 const N: usize = CARDS.len();
 
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Copy, Clone)]
+enum HandRank {
+    HighCard,
+    OnePair,
+    TwoPair,
+    ThreeOfAKind,
+    FullHouse,
+    FourOfAKind,
+    FiveOfAKind,
+}
+
+fn rank_for(top: usize, snd: usize, j: usize) -> HandRank {
+    if top + j == 5 {
+        HandRank::FiveOfAKind
+    } else if top + j == 4 {
+        HandRank::FourOfAKind
+    } else if top + j == 3 && snd == 2 || top == 3 && snd + j == 2 {
+        HandRank::FullHouse
+    } else if top + j == 3 {
+        HandRank::ThreeOfAKind
+    } else if top == 2 && snd + j == 2 {
+        HandRank::TwoPair
+    } else if top + j == 2 {
+        HandRank::OnePair
+    } else {
+        HandRank::HighCard
+    }
+}
+
 fn card_rank(cards: &str, card: char) -> usize {
     cards
         .char_indices()
@@ -11,66 +40,33 @@ fn card_rank(cards: &str, card: char) -> usize {
         .unwrap()
 }
 
-fn hand_rank(hand: &str) -> (u32, u64) {
+fn card_counts(cards: &str, hand: &str) -> ([usize; 13], u64) {
     let mut counts: [usize; N] = [0; N];
     let mut value: u64 = 0;
     for c in hand.chars() {
-        let card = N - card_rank(CARDS, c) - 1;
+        let card = N - card_rank(cards, c) - 1;
         counts[card] += 1;
         value = value * N as u64 + card as u64;
     }
+    (counts, value)
+}
+
+fn hand_rank(hand: &str) -> (HandRank, u64) {
+    let (mut counts, value) = card_counts(CARDS, hand);
     counts.sort_unstable();
     let x1 = counts[counts.len() - 1];
     let x2 = counts[counts.len() - 2];
-    let wide_rank = if x1 == 5 {
-        7
-    } else if x1 == 4 {
-        6
-    } else if x1 == 3 && x2 == 2 {
-        5
-    } else if x1 == 3 {
-        4
-    } else if x1 == 2 && x2 == 2 {
-        3
-    } else if x1 == 2 {
-        2
-    } else {
-        1
-    };
-    (wide_rank, value)
+    (rank_for(x1, x2, 0), value)
 }
 
-fn hand_rank2(hand: &str) -> (u32, u64) {
-    let mut counts: [usize; N] = [0; N];
-    let mut value: u64 = 0;
-    for c in hand.chars() {
-        let card = N - card_rank(CARDS2, c) - 1;
-        counts[card] += 1;
-        value = value * N as u64 + card as u64;
-    }
+fn hand_rank2(hand: &str) -> (HandRank, u64) {
+    let (mut counts, value) = card_counts(CARDS2, hand);
     let j = counts[0];
     counts[0] = 0;
     counts.sort_unstable();
     let x1 = counts[counts.len() - 1];
     let x2 = counts[counts.len() - 2];
-    let wide_rank = if x1 + j == 5 {
-        7
-    } else if x1 + j == 4 {
-        6
-    } else if x1 + j == 3 && x2 == 2 {
-        5
-    } else if x1 == 3 && x2 + j == 2 {
-        5
-    } else if x1 + j == 3 {
-        4
-    } else if x1 == 2 && x2 + j == 2 {
-        3
-    } else if x1 + j == 2 {
-        2
-    } else {
-        1
-    };
-    (wide_rank, value)
+    (rank_for(x1, x2, j), value)
 }
 
 #[aoc_generator(day7)]
@@ -81,8 +77,8 @@ pub fn input_generator(input: &str) -> Vec<(String, u64)> {
     p.parse(input).unwrap()
 }
 
-fn solve(input: &Vec<(String, u64)>, score: fn(&str)->(u32, u64)) -> u64 {
-    let mut work: Vec<((u32, u64), u64)> = input
+fn solve(input: &Vec<(String, u64)>, score: fn(&str) -> (HandRank, u64)) -> u64 {
+    let mut work: Vec<((HandRank, u64), u64)> = input
         .iter()
         .map(|(hand, stake)| (score(hand), *stake))
         .collect();
