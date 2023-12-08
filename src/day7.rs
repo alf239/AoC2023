@@ -15,18 +15,18 @@ enum HandRank {
     FiveOfAKind,
 }
 
-fn rank_for(top: usize, snd: usize, j: usize) -> HandRank {
-    if top + j == 5 {
+fn rank_for(top: usize, snd: usize) -> HandRank {
+    if top == 5 {
         HandRank::FiveOfAKind
-    } else if top + j == 4 {
+    } else if top == 4 {
         HandRank::FourOfAKind
-    } else if top + j == 3 && snd == 2 || top == 3 && snd + j == 2 {
+    } else if top == 3 && snd == 2 {
         HandRank::FullHouse
-    } else if top + j == 3 {
+    } else if top == 3 {
         HandRank::ThreeOfAKind
-    } else if top == 2 && snd + j == 2 {
+    } else if top == 2 && snd == 2 {
         HandRank::TwoPair
-    } else if top + j == 2 {
+    } else if top == 2 {
         HandRank::OnePair
     } else {
         HandRank::HighCard
@@ -63,7 +63,7 @@ fn top_two(mut counts: [usize; 13]) -> (usize, usize) {
 fn hand_rank(hand: &str) -> (HandRank, u64) {
     let (counts, value) = card_counts(CARDS, hand);
     let (x1, x2) = top_two(counts);
-    (rank_for(x1, x2, 0), value)
+    (rank_for(x1, x2), value)
 }
 
 fn hand_rank2(hand: &str) -> (HandRank, u64) {
@@ -71,7 +71,7 @@ fn hand_rank2(hand: &str) -> (HandRank, u64) {
     let j = counts[0];
     counts[0] = 0;
     let (x1, x2) = top_two(counts);
-    (rank_for(x1, x2, j), value)
+    (rank_for(x1 + j, x2), value)
 }
 
 #[aoc_generator(day7)]
