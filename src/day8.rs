@@ -1,3 +1,4 @@
+use num_integer::Integer;
 use std::collections::HashMap;
 
 use aoc_parse::{parser, prelude::*};
@@ -40,19 +41,11 @@ fn solve_part1(input: &Task) -> usize {
     n
 }
 
-#[derive(Debug)]
-struct FoundLoop {
-    start: usize,
-    len: usize,
-    flag_at: usize,
-}
-
-fn hare_tortoise<T, F, P>(seed: T, step: F, flag: P) -> FoundLoop
+fn hare_tortoise<T, F>(seed: T, step: F) -> usize
 where
     T: Copy,
     T: Eq,
     F: Fn(T) -> T,
-    P: Fn(T) -> bool,
 {
     let mut hare: T = seed;
     let mut tortoise: T = seed;
@@ -70,56 +63,9 @@ where
                 }
             }
 
-            hare = seed;
-            tortoise = seed;
-            for _ in 0..len {
-                hare = step(hare);
-            }
-            let mut start = 0;
-            loop {
-                hare = step(hare);
-                tortoise = step(tortoise);
-                start += 1;
-                if hare == tortoise {
-                    break;
-                }
-            }
-
-            hare = seed;
-            let mut flag_at = 0;
-            for i in 0..start + len {
-                if flag(hare) {
-                    flag_at = i;
-                    break;
-                }
-                hare = step(hare);
-            }
-
-            return FoundLoop {
-                start,
-                len,
-                flag_at,
-            };
+            return len;
         }
     }
-}
-
-// https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
-fn extended_gcd(a: i64, b: i64) -> (i64, i64, i64) {
-    let mut s = 0;
-    let mut old_s = 1;
-    let mut r = b;
-    let mut old_r = a;
-
-    while r != 0 {
-        let quotient = old_r / r;
-        (old_r, r) = (r, old_r - quotient * r);
-        (old_s, s) = (s, old_s - quotient * s);
-    }
-
-    let bezout_t = if b == 0 { 0 } else { (old_r - old_s * a) / b };
-
-    (old_s, bezout_t, old_r)
 }
 
 #[aoc(day8, part2)]
@@ -133,26 +79,16 @@ fn solve_part2(input: &Task) -> i64 {
         .filter(|&node| node.ends_with("A"))
         .collect();
 
-    let cycles: Vec<FoundLoop> = starts
+    starts
         .iter()
         .map(|&s| {
-            hare_tortoise(
-                (s, 0),
-                |(s, i)| {
-                    let cmd = prog[i];
-                    let (left, right) = input.net.get(s).unwrap();
-                    (if cmd == 'L' { left } else { right }, (i + 1) % prog_len)
-                },
-                |(s, _)| s.ends_with("Z"),
-            )
+            hare_tortoise((s, 0), |(s, i)| {
+                let cmd = prog[i];
+                let (left, right) = input.net.get(s).unwrap();
+                (if cmd == 'L' { left } else { right }, (i + 1) % prog_len)
+            })
         })
-        .collect();
-
-    cycles.iter().fold(1, |acc, fl| {
-        let flag_at = fl.flag_at as i64;
-        let (_, _, r) = extended_gcd(acc, flag_at);
-        acc * flag_at / r
-    })
+        .fold(1, |acc, cycle_len| acc.gcd_lcm(&(cycle_len as i64)).1)
 }
 
 #[cfg(test)]
