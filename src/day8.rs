@@ -82,6 +82,10 @@ fn solve_part2(input: &Task) -> i64 {
     starts
         .iter()
         .map(|&s| {
+            // It just so happened that in this task the first occurence of the flag
+            // is exactly the same value as the length of the loop in the instructions
+            // So we can drop the tortoise/hare altogether, and simply find the first index,
+            // but at this point it would be completely stupid
             hare_tortoise((s, 0), |(s, i)| {
                 let cmd = prog[i];
                 let (left, right) = input.net.get(s).unwrap();
