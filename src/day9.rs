@@ -22,19 +22,19 @@ fn extrapolate(xs: &Vec<i32>) -> i32 {
 
 #[aoc(day9, part1)]
 fn solve_part1(input: &Task) -> i32 {
-    input.seqs.iter().map(|xs| extrapolate(xs)).sum()
+    input.seqs.iter().map(extrapolate).sum()
 }
 
 #[aoc(day9, part2)]
 fn solve_part2(input: &Task) -> i32 {
-    input
-        .seqs
-        .iter()
-        .map(|xs| {
-            let xxs = xs.iter().copied().rev().collect();
-            extrapolate(&xxs)
-        })
-        .sum()
+    let reversed = Task {
+        seqs: input
+            .seqs
+            .iter()
+            .map(|xs| xs.iter().copied().rev().collect())
+            .collect(),
+    };
+    solve_part1(&reversed)
 }
 
 #[cfg(test)]
