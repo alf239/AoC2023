@@ -40,6 +40,22 @@ fn try_schedule(
     }
 }
 
+fn rt((i, j): Coords, d: usize, map: &HashMap<Coords, char>, work: &mut VecDeque<(Coords, usize)>) {
+    try_schedule((i, j + 1), d, "J-7", map, work);
+}
+
+fn lt((i, j): Coords, d: usize, map: &HashMap<Coords, char>, work: &mut VecDeque<(Coords, usize)>) {
+    try_schedule((i, j - 1), d, "L-F", map, work);
+}
+
+fn dn((i, j): Coords, d: usize, map: &HashMap<Coords, char>, work: &mut VecDeque<(Coords, usize)>) {
+    try_schedule((i + 1, j), d, "JL|", map, work);
+}
+
+fn up((i, j): Coords, d: usize, map: &HashMap<Coords, char>, work: &mut VecDeque<(Coords, usize)>) {
+    try_schedule((i - 1, j), d, "7F|", map, work)
+}
+
 fn dijkstra_loop(map: &HashMap<Coords, char>) -> HashMap<Coords, usize> {
     let start = map
         .iter()
@@ -48,63 +64,47 @@ fn dijkstra_loop(map: &HashMap<Coords, char>) -> HashMap<Coords, usize> {
     let mut dist: HashMap<Coords, usize> = HashMap::new();
     let mut work: VecDeque<(Coords, usize)> = VecDeque::from([(start, 0)]);
     while !work.is_empty() {
-        let ((i, j), d) = work.pop_front().unwrap();
-        if dist.contains_key(&(i, j)) {
+        let (coords, d) = work.pop_front().unwrap();
+        if dist.contains_key(&coords) {
             continue;
         }
-        dist.insert((i, j), d);
-        let c = map.get(&(i, j)).unwrap();
+        dist.insert(coords, d);
+        let c = map.get(&coords).unwrap();
         match c {
             '|' => {
-                up(i, j, d, map, &mut work);
-                dn(i, j, d, map, &mut work);
+                up(coords, d, map, &mut work);
+                dn(coords, d, map, &mut work);
             }
             '-' => {
-                lt(i, j, d, map, &mut work);
-                rt(i, j, d, map, &mut work);
+                lt(coords, d, map, &mut work);
+                rt(coords, d, map, &mut work);
             }
             'L' => {
-                up(i, j, d, map, &mut work);
-                rt(i, j, d, map, &mut work);
+                up(coords, d, map, &mut work);
+                rt(coords, d, map, &mut work);
             }
             'J' => {
-                up(i, j, d, map, &mut work);
-                lt(i, j, d, map, &mut work);
+                up(coords, d, map, &mut work);
+                lt(coords, d, map, &mut work);
             }
             '7' => {
-                lt(i, j, d, map, &mut work);
-                dn(i, j, d, map, &mut work);
+                lt(coords, d, map, &mut work);
+                dn(coords, d, map, &mut work);
             }
             'F' => {
-                dn(i, j, d, map, &mut work);
-                rt(i, j, d, map, &mut work);
+                dn(coords, d, map, &mut work);
+                rt(coords, d, map, &mut work);
             }
             'S' => {
-                up(i, j, d, map, &mut work);
-                dn(i, j, d, map, &mut work);
-                lt(i, j, d, map, &mut work);
-                rt(i, j, d, map, &mut work);
+                up(coords, d, map, &mut work);
+                dn(coords, d, map, &mut work);
+                lt(coords, d, map, &mut work);
+                rt(coords, d, map, &mut work);
             }
             _ => (),
         }
     }
     dist
-}
-
-fn rt(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
-    try_schedule((i, j + 1), d, "J-7", map, work);
-}
-
-fn lt(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
-    try_schedule((i, j - 1), d, "L-F", map, work);
-}
-
-fn dn(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
-    try_schedule((i + 1, j), d, "JL|", map, work);
-}
-
-fn up(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
-    try_schedule((i - 1, j), d, "7F|", map, work)
 }
 
 #[aoc(day10, part1)]
