@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, VecDeque};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -96,13 +96,6 @@ fn solve_part1(input: &Task) -> usize {
     let (_, _, map) = input;
     let dist = dijkstra_loop(map);
     *dist.values().max().unwrap()
-}
-
-enum Pos {
-    In,
-    Out,
-    LineIn,
-    LineOut
 }
 
 #[aoc(day10, part2)]
