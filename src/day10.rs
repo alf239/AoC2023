@@ -2,7 +2,7 @@ use aoc_parse::{parser, prelude::*};
 
 type Task = String;
 
-#[aoc_generator(day9)]
+#[aoc_generator(day10)]
 pub fn input_generator(input: &str) -> Task {
     // let p = parser!(seqs:lines(repeat_sep(i32, " ")) => Task { seqs });
     // p.parse(input).unwrap()
