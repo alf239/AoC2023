@@ -56,39 +56,55 @@ fn dijkstra_loop(map: &HashMap<Coords, char>) -> HashMap<Coords, usize> {
         let c = map.get(&(i, j)).unwrap();
         match c {
             '|' => {
-                try_schedule((i - 1, j), d, "7F|", map, &mut work);
-                try_schedule((i + 1, j), d, "JL|", map, &mut work);
+                up(i, j, d, map, &mut work);
+                dn(i, j, d, map, &mut work);
             }
             '-' => {
-                try_schedule((i, j - 1), d, "L-F", map, &mut work);
-                try_schedule((i, j + 1), d, "J-7", map, &mut work);
+                lt(i, j, d, map, &mut work);
+                rt(i, j, d, map, &mut work);
             }
             'L' => {
-                try_schedule((i - 1, j), d, "7F|", map, &mut work);
-                try_schedule((i, j + 1), d, "J-7", map, &mut work);
+                up(i, j, d, map, &mut work);
+                rt(i, j, d, map, &mut work);
             }
             'J' => {
-                try_schedule((i, j - 1), d, "L-F", map, &mut work);
-                try_schedule((i - 1, j), d, "7F|", map, &mut work);
+                up(i, j, d, map, &mut work);
+                lt(i, j, d, map, &mut work);
             }
             '7' => {
-                try_schedule((i, j - 1), d, "L-F", map, &mut work);
-                try_schedule((i + 1, j), d, "JL|", map, &mut work);
+                lt(i, j, d, map, &mut work);
+                dn(i, j, d, map, &mut work);
             }
             'F' => {
-                try_schedule((i, j + 1), d, "J-7", map, &mut work);
-                try_schedule((i + 1, j), d, "JL|", map, &mut work);
+                dn(i, j, d, map, &mut work);
+                rt(i, j, d, map, &mut work);
             }
             'S' => {
-                try_schedule((i - 1, j), d, "7F|", map, &mut work);
-                try_schedule((i + 1, j), d, "JL|", map, &mut work);
-                try_schedule((i, j - 1), d, "L-F", map, &mut work);
-                try_schedule((i, j + 1), d, "J-7", map, &mut work);
+                up(i, j, d, map, &mut work);
+                dn(i, j, d, map, &mut work);
+                lt(i, j, d, map, &mut work);
+                rt(i, j, d, map, &mut work);
             }
             _ => (),
         }
     }
     dist
+}
+
+fn rt(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
+    try_schedule((i, j + 1), d, "J-7", map, work);
+}
+
+fn lt(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
+    try_schedule((i, j - 1), d, "L-F", map, work);
+}
+
+fn dn(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
+    try_schedule((i + 1, j), d, "JL|", map, work);
+}
+
+fn up(i: i32, j: i32, d: usize, map: &HashMap<(i32, i32), char>, work: &mut VecDeque<((i32, i32), usize)>) {
+    try_schedule((i - 1, j), d, "7F|", map, work)
 }
 
 #[aoc(day10, part1)]
