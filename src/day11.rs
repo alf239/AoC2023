@@ -5,7 +5,7 @@ type Task = Vec<Vec<bool>>;
 #[aoc_generator(day11)]
 pub fn input_generator(input: &str) -> Task {
     let p = parser!(lines(
-       star:char_of(".#")+ => star.iter().map(|&c| c == 1).collect()
+       (star:char_of(".#") => star == 1)+
     ));
     p.parse(input).unwrap()
 }
