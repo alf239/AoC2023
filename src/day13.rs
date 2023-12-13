@@ -1,5 +1,3 @@
-use std::{collections::HashSet, iter::repeat};
-
 use aoc_parse::{parser, prelude::*};
 
 type Task = Vec<Vec<Vec<usize>>>;
@@ -12,20 +10,6 @@ pub fn input_generator(input: &str) -> Task {
     p.parse(input).unwrap()
 }
 
-fn sum1_1d(xs: &Vec<usize>) -> usize {
-    for i in 1..xs.len() {
-        if xs[..i]
-            .iter()
-            .rev()
-            .zip(xs[i..].iter())
-            .all(|(&a, &b)| a == b)
-        {
-            return i;
-        }
-    }
-    0
-}
-
 fn bits(x: usize) -> usize {
     let mut n = x;
     n = ((0xaaaaaaaa & n) >> 1) + (0x55555555 & n);
@@ -36,14 +20,15 @@ fn bits(x: usize) -> usize {
     return n;
 }
 
-fn sum2_1d(xs: &Vec<usize>) -> usize {
+fn sum_1d(xs: &Vec<usize>, diff: usize) -> usize {
     for i in 1..xs.len() {
         if xs[..i]
             .iter()
             .rev()
             .zip(xs[i..].iter())
             .map(|(&a, &b)| bits(a ^ b))
-            .sum::<usize>() == 1
+            .sum::<usize>()
+            == diff
         {
             return i;
         }
@@ -62,26 +47,20 @@ fn summarise_lines(m: &Vec<Vec<usize>>) -> (Vec<usize>, Vec<usize>) {
     (hor, ver)
 }
 
-fn sum1(m: &Vec<Vec<usize>>) -> usize {
+fn sum(m: &Vec<Vec<usize>>, diff: usize) -> usize {
     let (hor, ver) = summarise_lines(m);
 
-    sum1_1d(&hor) * 100 + sum1_1d(&ver)
+    sum_1d(&hor, diff) * 100 + sum_1d(&ver, diff)
 }
 
 #[aoc(day13, part1)]
 fn solve_part1(input: &Task) -> usize {
-    input.iter().map(sum1).sum()
-}
-
-fn sum2(m: &Vec<Vec<usize>>) -> usize {
-    let (hor, ver) = summarise_lines(m);
-
-    sum2_1d(&hor) * 100 + sum2_1d(&ver)
+    input.iter().map(|m| sum(m, 0)).sum()
 }
 
 #[aoc(day13, part2)]
 fn solve_part2(input: &Task) -> usize {
-    input.iter().map(sum2).sum()
+    input.iter().map(|m| sum(m, 1)).sum()
 }
 
 #[cfg(test)]
