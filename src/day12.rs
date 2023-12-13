@@ -24,10 +24,15 @@ fn arr2(s: &str, jp: &[usize]) -> u64 {
     arrangements(&vec, &jp1)
 }
 
-fn arrangements(s1: &[char], jp: &[usize]) -> u64 {
-    let mut s2 = Vec::from(s1);
-    s2.insert(0, '.');
-    let s: Vec<char> = s2.iter().cloned().collect(); 
+fn prepend(c: char, cs: &[char]) -> Vec<char> {
+    let mut s = Vec::with_capacity(cs.len() + 1);
+    s.push(c); // Prepend the fixed value
+    s.extend(cs); // Add the original slice
+    s
+}
+
+fn arrangements(cs: &[char], jp: &[usize]) -> u64 {
+    let s = prepend('.', cs);
     let empty = HashSet::from([0]);
     let mut ls: Vec<HashSet<usize>> = (0..s.len() + 1).map(|_| empty.clone()).collect();
     let mut cur = empty.clone();
