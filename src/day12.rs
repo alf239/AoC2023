@@ -26,8 +26,8 @@ fn arr2(s: &str, jp: &[usize]) -> u64 {
 
 fn prepend(c: char, cs: &[char]) -> Vec<char> {
     let mut s = Vec::with_capacity(cs.len() + 1);
-    s.push(c); // Prepend the fixed value
-    s.extend(cs); // Add the original slice
+    s.push(c);
+    s.extend(cs);
     s
 }
 
