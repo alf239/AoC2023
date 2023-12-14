@@ -7,7 +7,7 @@ type Task = Vec<Vec<usize>>;
 #[aoc_generator(day14)]
 pub fn input_generator(input: &str) -> Task {
     let p = parser!(
-        lines( char_of(".#O")+)
+        lines(char_of(".#O")+)
     );
     p.parse(input).unwrap()
 }
