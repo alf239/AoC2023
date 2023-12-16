@@ -50,7 +50,6 @@ pub fn input_generator(input: &str) -> Task {
 type Particle = (Coords, Coords);
 
 fn eval(input: &Task, seed: Particle) -> usize {
-    let mut energised: HashSet<Coords> = HashSet::new();
     let mut seen: HashSet<Particle> = HashSet::new();
     let mut work: VecDeque<Particle> = VecDeque::from([seed]);
     while !work.is_empty() {
@@ -61,7 +60,6 @@ fn eval(input: &Task, seed: Particle) -> usize {
         if !seen.insert(p) {
             continue;
         }
-        energised.insert(pos);
         match input.m.get(&pos) {
             None => {
                 work.push_back(((i + di, j + dj), (di, dj)));
@@ -88,6 +86,7 @@ fn eval(input: &Task, seed: Particle) -> usize {
             }
         }
     }
+    let energised: HashSet<Coords> = HashSet::from_iter(seen.iter().map(|p| p.0));
     energised.len()
 }
 
