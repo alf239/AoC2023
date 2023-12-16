@@ -54,7 +54,7 @@ fn eval(input: &Task, seed: Particle) -> usize {
     let mut seen: HashSet<Particle> = HashSet::new();
     let mut work: VecDeque<Particle> = VecDeque::from([seed]);
     while !work.is_empty() {
-        let p @ (pos @ (i, j), (di, dj)) = work.pop_front().unwrap();
+        let p @ (pos @ (i, j), (di, dj)) = work.pop_back().unwrap();
         if i < 0 || j < 0 || i >= input.h || j >= input.w {
             continue;
         }
