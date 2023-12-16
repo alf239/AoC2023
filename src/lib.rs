@@ -4,6 +4,7 @@ extern crate aoc_runner;
 extern crate aoc_runner_derive;
 extern crate aoc_parse;
 extern crate num_integer;
+extern crate rayon;
 
 mod day1;
 mod day10;
