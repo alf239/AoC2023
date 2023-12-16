@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet, VecDeque},
-    mem::swap,
-};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -52,11 +49,10 @@ pub fn input_generator(input: &str) -> Task {
 
 type Particle = (Coords, Coords);
 
-#[aoc(day16, part1)]
-fn solve_part1(input: &Task) -> usize {
+fn eval(input: &Task, seed: Particle) -> usize {
     let mut energised: HashSet<Coords> = HashSet::new();
     let mut seen: HashSet<Particle> = HashSet::new();
-    let mut work: VecDeque<Particle> = VecDeque::from([((0, 0), (0, 1))]);
+    let mut work: VecDeque<Particle> = VecDeque::from([seed]);
     while !work.is_empty() {
         let p @ (pos @ (i, j), (di, dj)) = work.pop_front().unwrap();
         if i < 0 || j < 0 || i >= input.h || j >= input.w {
@@ -95,9 +91,25 @@ fn solve_part1(input: &Task) -> usize {
     energised.len()
 }
 
+#[aoc(day16, part1)]
+fn solve_part1(input: &Task) -> usize {
+    let seed = ((0, 0), (0, 1));
+    eval(input, seed)
+}
+
 #[aoc(day16, part2)]
 fn solve_part2(input: &Task) -> usize {
-    2
+    let max_hor = (0..input.h)
+        .flat_map(|i| [((i, 0), (0, 1)), ((i, input.w - 1), (0, -1))])
+        .map(|p| eval(input, p))
+        .max()
+        .unwrap();
+    let max_ver = (0..input.w)
+        .flat_map(|j| [((0, j), (1, 0)), ((input.h - 1, j), (-1, 0))])
+        .map(|p| eval(input, p))
+        .max()
+        .unwrap();
+    max_hor.max(max_ver)
 }
 
 #[cfg(test)]
@@ -122,6 +134,6 @@ mod tests {
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 46);
         let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
+        assert_eq!(result2, 51);
     }
 }
