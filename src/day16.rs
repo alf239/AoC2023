@@ -1,5 +1,5 @@
-use std::collections::{HashMap, HashSet, VecDeque};
 use rayon::prelude::*;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -99,19 +99,10 @@ fn solve_part1(input: &Task) -> usize {
 
 #[aoc(day16, part2)]
 fn solve_part2(input: &Task) -> usize {
-    let max_hor = (0..input.h)
-        .flat_map(|i| [((i, 0), (0, 1)), ((i, input.w - 1), (0, -1))])
-        .par_bridge()
-        .map(|p| eval(input, p))
-        .max()
-        .unwrap();
-    let max_ver = (0..input.w)
-        .flat_map(|j| [((0, j), (1, 0)), ((input.h - 1, j), (-1, 0))])
-        .par_bridge()
-        .map(|p| eval(input, p))
-        .max()
-        .unwrap();
-    max_hor.max(max_ver)
+    let mut seeds: Vec<Particle> = Vec::with_capacity(2 * (input.h + input.w) as usize);
+    seeds.extend((0..input.h).flat_map(|i| [((i, 0), (0, 1)), ((i, input.w - 1), (0, -1))]));
+    seeds.extend((0..input.w).flat_map(|j| [((0, j), (1, 0)), ((input.h - 1, j), (-1, 0))]));
+    seeds.par_iter().map(|&p| eval(input, p)).max().unwrap()
 }
 
 #[cfg(test)]
