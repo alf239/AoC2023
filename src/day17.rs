@@ -1,5 +1,5 @@
 use priority_queue::PriorityQueue;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use aoc_parse::{parser, prelude::*};
 
@@ -43,7 +43,6 @@ fn try_schedule(
 fn solve(input: &Task, max_fwd: usize, min_fwd: usize) -> i64 {
     let h = input.len();
     let w = input[0].len();
-    let mut seen = HashSet::new();
     let mut work: PriorityQueue<Node, i64> = PriorityQueue::new();
     let mut dist: HashMap<Node, i64> = HashMap::new();
     dist.insert((0, 0, Dir::S, 0), 0);
@@ -52,9 +51,6 @@ fn solve(input: &Task, max_fwd: usize, min_fwd: usize) -> i64 {
     work.push((0, 0, Dir::E, 0), 0);
     while !work.is_empty() {
         let ((i, j, d, b), hl) = work.pop().unwrap();
-        if !seen.insert((i, j, d, b)) {
-            continue;
-        }
         match d {
             Dir::N => {
                 if b < max_fwd && i > 0 {
