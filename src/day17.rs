@@ -19,8 +19,6 @@ pub fn input_generator(input: &str) -> Task {
     p.parse(input).unwrap()
 }
 
-const B: usize = 2;
-
 type Node = (usize, usize, Dir, usize);
 
 fn try_schedule(
@@ -42,16 +40,16 @@ fn try_schedule(
     work.push((i, j, dir, b), proposed_hl);
 }
 
-#[aoc(day17, part1)]
-fn solve_part1(input: &Task) -> i64 {
+fn solve(input: &Task, max_fwd: usize, min_fwd: usize) -> i64 {
     let h = input.len();
     let w = input[0].len();
     let mut seen = HashSet::new();
     let mut work: PriorityQueue<Node, i64> = PriorityQueue::new();
     let mut dist: HashMap<Node, i64> = HashMap::new();
-    dist.insert((0, 0, Dir::S, B), 0);
-    dist.insert((0, 0, Dir::E, B), 0);
-    work.push((0, 0, Dir::S, B), 0);
+    dist.insert((0, 0, Dir::S, 0), 0);
+    dist.insert((0, 0, Dir::E, 0), 0);
+    work.push((0, 0, Dir::S, 0), 0);
+    work.push((0, 0, Dir::E, 0), 0);
     while !work.is_empty() {
         let ((i, j, d, b), hl) = work.pop().unwrap();
         if !seen.insert((i, j, d, b)) {
@@ -59,54 +57,62 @@ fn solve_part1(input: &Task) -> i64 {
         }
         match d {
             Dir::N => {
-                if b > 0 && i > 0 {
-                    try_schedule(&mut dist, &mut work, input, i - 1, j, Dir::N, b - 1, hl);
+                if b < max_fwd && i > 0 {
+                    try_schedule(&mut dist, &mut work, input, i - 1, j, Dir::N, b + 1, hl);
                 }
-                if j > 0 {
-                    try_schedule(&mut dist, &mut work, input, i, j - 1, Dir::W, B, hl);
-                }
-                if j < w - 1 {
-                    try_schedule(&mut dist, &mut work, input, i, j + 1, Dir::E, B, hl);
+                if b >= min_fwd {
+                    if j > 0 {
+                        try_schedule(&mut dist, &mut work, input, i, j - 1, Dir::W, 1, hl);
+                    }
+                    if j < w - 1 {
+                        try_schedule(&mut dist, &mut work, input, i, j + 1, Dir::E, 1, hl);
+                    }
                 }
             }
             Dir::S => {
-                if b > 0 && i < w - 1 {
-                    try_schedule(&mut dist, &mut work, input, i + 1, j, Dir::S, b - 1, hl);
+                if b < max_fwd && i < h - 1 {
+                    try_schedule(&mut dist, &mut work, input, i + 1, j, Dir::S, b + 1, hl);
                 }
-                if j > 0 {
-                    try_schedule(&mut dist, &mut work, input, i, j - 1, Dir::W, B, hl);
-                }
-                if j < w - 1 {
-                    try_schedule(&mut dist, &mut work, input, i, j + 1, Dir::E, B, hl);
+                if b >= min_fwd {
+                    if j > 0 {
+                        try_schedule(&mut dist, &mut work, input, i, j - 1, Dir::W, 1, hl);
+                    }
+                    if j < w - 1 {
+                        try_schedule(&mut dist, &mut work, input, i, j + 1, Dir::E, 1, hl);
+                    }
                 }
             }
             Dir::W => {
-                if b > 0 && j > 0 {
-                    try_schedule(&mut dist, &mut work, input, i, j - 1, Dir::W, b - 1, hl);
+                if b < max_fwd && j > 0 {
+                    try_schedule(&mut dist, &mut work, input, i, j - 1, Dir::W, b + 1, hl);
                 }
-                if i > 0 {
-                    try_schedule(&mut dist, &mut work, input, i - 1, j, Dir::N, B, hl);
-                }
-                if i < h - 1 {
-                    try_schedule(&mut dist, &mut work, input, i + 1, j, Dir::S, B, hl);
+                if b >= min_fwd {
+                    if i > 0 {
+                        try_schedule(&mut dist, &mut work, input, i - 1, j, Dir::N, 1, hl);
+                    }
+                    if i < h - 1 {
+                        try_schedule(&mut dist, &mut work, input, i + 1, j, Dir::S, 1, hl);
+                    }
                 }
             }
             Dir::E => {
-                if b > 0 && j < w - 1 {
-                    try_schedule(&mut dist, &mut work, input, i, j + 1, Dir::E, b - 1, hl);
+                if b < max_fwd && j < w - 1 {
+                    try_schedule(&mut dist, &mut work, input, i, j + 1, Dir::E, b + 1, hl);
                 }
-                if i > 0 {
-                    try_schedule(&mut dist, &mut work, input, i - 1, j, Dir::N, B, hl);
-                }
-                if i < h - 1 {
-                    try_schedule(&mut dist, &mut work, input, i + 1, j, Dir::S, B, hl);
+                if b >= min_fwd {
+                    if i > 0 {
+                        try_schedule(&mut dist, &mut work, input, i - 1, j, Dir::N, 1, hl);
+                    }
+                    if i < h - 1 {
+                        try_schedule(&mut dist, &mut work, input, i + 1, j, Dir::S, 1, hl);
+                    }
                 }
             }
         }
     }
     let mut hl = i64::MIN;
-    for d in [Dir::N, Dir::E] {
-        for b in 0..=3 {
+    for d in [Dir::S, Dir::E] {
+        for b in 0..=max_fwd {
             match dist.get(&(h - 1, w - 1, d, b)) {
                 Some(&hl1) => hl = hl.max(hl1),
                 None => {}
@@ -116,9 +122,14 @@ fn solve_part1(input: &Task) -> i64 {
     -hl
 }
 
+#[aoc(day17, part1)]
+fn solve_part1(input: &Task) -> i64 {
+    solve(input, 3, 1)
+}
+
 #[aoc(day17, part2)]
-fn solve_part2(input: &Task) -> usize {
-    2
+fn solve_part2(input: &Task) -> i64 {
+    solve(input, 10, 4)
 }
 
 #[cfg(test)]
@@ -146,6 +157,6 @@ mod tests {
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 102);
         let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
+        assert_eq!(result2, 94);
     }
 }
