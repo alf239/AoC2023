@@ -98,7 +98,7 @@ fn solve_part2(input: &Task) -> i64 {
         perimeter += len;
         prev = next;
     }
-    area.abs() / 2 + perimeter / 2 + 1
+    (area.abs() + perimeter) / 2 + 1
 }
 
 #[cfg(test)]
