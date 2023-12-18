@@ -1,6 +1,7 @@
 use std::collections::{HashSet, VecDeque};
 
 use aoc_parse::{parser, prelude::*};
+use rayon::iter::IndexedParallelIterator;
 
 pub struct Cmd {
     dir: usize,
@@ -14,7 +15,7 @@ type Task = Vec<Cmd>;
 pub fn input_generator(input: &str) -> Task {
     let p = parser!(
         lines(
-            dir:char_of("URDL") " " len:usize " (#" rgb:u32_hex ")" => Cmd { dir, len, rgb }
+            dir:char_of("RDLU") " " len:usize " (#" rgb:u32_hex ")" => Cmd { dir, len, rgb }
         )
     );
     p.parse(input).unwrap()
@@ -29,10 +30,10 @@ fn solve_part1(input: &Task) -> usize {
     for Cmd { dir, len, rgb: _ } in input {
         for _ in 0..*len {
             match *dir {
-                0 => i -= 1,
-                1 => j += 1,
-                2 => i += 1,
-                3 => j -= 1,
+                0 => j += 1,
+                1 => i += 1,
+                2 => j -= 1,
+                3 => i -= 1,
                 _ => panic!("Holy shit, what's {}", *dir),
             }
             m.insert((i, j));
@@ -81,7 +82,29 @@ fn find_seed(m: &HashSet<(i32, i32)>) -> (i32, i32) {
 
 #[aoc(day18, part2)]
 fn solve_part2(input: &Task) -> i64 {
-    2
+    let mut prev = (0, 0);
+    let mut area = 0i64;
+    let mut perimeter = 1i64;
+    for Cmd {
+        dir: _,
+        len: _,
+        rgb,
+    } in input
+    {
+        let dir = rgb % 16;
+        let len = *rgb as i64 / 16;
+        let next = match dir {
+            0 => (prev.0, prev.1 + len),
+            1 => (prev.0 + len, prev.1),
+            2 => (prev.0, prev.1 - len),
+            3 => (prev.0 - len, prev.1),
+            _ => panic!("Holy shit, what's {}", dir),
+        };
+        area += (prev.0 - next.0) * (prev.1 + next.1);
+        perimeter += len;
+        prev = next;
+    }
+    area.abs() / 2 + perimeter / 2 + 1
 }
 
 #[cfg(test)]
