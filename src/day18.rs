@@ -26,7 +26,7 @@ fn solve_part1(input: &Task) -> usize {
     let mut i = 0;
     let mut j = 0;
     m.insert((i, j));
-    for Cmd { dir, len, rgb } in input {
+    for Cmd { dir, len, rgb: _ } in input {
         for _ in 0..*len {
             match *dir {
                 0 => i -= 1,
@@ -77,26 +77,6 @@ fn find_seed(m: &HashSet<(i32, i32)>) -> (i32, i32) {
         }
     }
     (seed_i, seed_j)
-}
-
-fn dump(m: &HashSet<(i32, i32)>) {
-    let mni = m.iter().map(|p| p.0).min().unwrap();
-    let mxi = m.iter().map(|p| p.0).max().unwrap();
-    let mnj = m.iter().map(|p| p.1).min().unwrap();
-    let mxj = m.iter().map(|p| p.1).max().unwrap();
-    println!();
-    println!("i: {} to {}", mni, mxi);
-    println!("j: {} to {}", mnj, mxj);
-    for i in mni..=mxi {
-        for j in mnj..=mxj {
-            if m.contains(&(i, j)) {
-                print!("#");
-            } else {
-                print!(".");
-            }
-        }
-        println!();
-    }
 }
 
 #[aoc(day18, part2)]
