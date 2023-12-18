@@ -3,16 +3,18 @@ use aoc_parse::{parser, prelude::*};
 pub struct Cmd {
     dir: usize,
     len: usize,
-    rgb: u32,
+    rgb: usize,
 }
 
 type Task = Vec<Cmd>;
+
+const MOVES: [(i64, i64); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 
 #[aoc_generator(day18)]
 pub fn input_generator(input: &str) -> Task {
     let p = parser!(
         lines(
-            dir:char_of("RDLU") " " len:usize " (#" rgb:u32_hex ")" => Cmd { dir, len, rgb }
+            dir:char_of("RDLU") " " len:usize " (#" rgb:usize_hex ")" => Cmd { dir, len, rgb }
         )
     );
     p.parse(input).unwrap()
@@ -27,13 +29,8 @@ where
     let mut perimeter = 1i64;
     for (dir, len) in cmds {
         let len = len as i64;
-        let next = match dir {
-            0 => (prev.0, prev.1 + len),
-            1 => (prev.0 + len, prev.1),
-            2 => (prev.0, prev.1 - len),
-            3 => (prev.0 - len, prev.1),
-            _ => panic!("Holy shit, what's {}", dir),
-        };
+        let (di, dj) = MOVES[dir];
+        let next = (prev.0 + di * len, prev.1 + dj * len);
         area += (prev.0 - next.0) * (prev.1 + next.1);
         perimeter += len;
         prev = next;
@@ -49,9 +46,7 @@ fn solve_part1(input: &Task) -> i64 {
 
 #[aoc(day18, part2)]
 fn solve_part2(input: &Task) -> i64 {
-    let cmds = input
-        .iter()
-        .map(|cmd| ((cmd.rgb % 16) as usize, (cmd.rgb / 16) as usize));
+    let cmds = input.iter().map(|cmd| (cmd.rgb % 16, cmd.rgb / 16));
     area(cmds)
 }
 
