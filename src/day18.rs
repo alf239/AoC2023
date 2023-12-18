@@ -1,7 +1,6 @@
 use std::collections::{HashSet, VecDeque};
 
 use aoc_parse::{parser, prelude::*};
-use rayon::iter::IndexedParallelIterator;
 
 pub struct Cmd {
     dir: usize,
@@ -27,14 +26,14 @@ fn solve_part1(input: &Task) -> usize {
     let mut i = 0;
     let mut j = 0;
     m.insert((i, j));
-    for Cmd { dir, len, rgb: _ } in input {
-        for _ in 0..*len {
-            match *dir {
+    for cmd in input {
+        for _ in 0..cmd.len {
+            match cmd.dir {
                 0 => j += 1,
                 1 => i += 1,
                 2 => j -= 1,
                 3 => i -= 1,
-                _ => panic!("Holy shit, what's {}", *dir),
+                _ => panic!("Holy shit, what's {}", cmd.dir),
             }
             m.insert((i, j));
         }
@@ -85,14 +84,9 @@ fn solve_part2(input: &Task) -> i64 {
     let mut prev = (0, 0);
     let mut area = 0i64;
     let mut perimeter = 1i64;
-    for Cmd {
-        dir: _,
-        len: _,
-        rgb,
-    } in input
-    {
-        let dir = rgb % 16;
-        let len = *rgb as i64 / 16;
+    for cmd in input {
+        let dir = cmd.rgb % 16;
+        let len = cmd.rgb as i64 / 16;
         let next = match dir {
             0 => (prev.0, prev.1 + len),
             1 => (prev.0 + len, prev.1),
