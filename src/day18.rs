@@ -1,3 +1,5 @@
+use std::collections::{HashSet, VecDeque};
+
 use aoc_parse::{parser, prelude::*};
 
 pub struct Cmd {
@@ -20,11 +22,85 @@ pub fn input_generator(input: &str) -> Task {
 
 #[aoc(day18, part1)]
 fn solve_part1(input: &Task) -> usize {
-    1
+    let mut m: HashSet<(i32, i32)> = HashSet::new();
+    let mut i = 0;
+    let mut j = 0;
+    m.insert((i, j));
+    for Cmd { dir, len, rgb } in input {
+        for _ in 0..*len {
+            match *dir {
+                0 => i -= 1,
+                1 => j += 1,
+                2 => i += 1,
+                3 => j -= 1,
+                _ => panic!("Holy shit, what's {}", *dir),
+            }
+            m.insert((i, j));
+        }
+    }
+
+    let seed = find_seed(&m);
+
+    let mut work = VecDeque::new();
+    work.push_back(seed);
+    while let Some((i, j)) = work.pop_front() {
+        if m.contains(&(i, j)) {
+            continue;
+        }
+        m.insert((i, j));
+        work.push_back((i + 1, j));
+        work.push_back((i - 1, j));
+        work.push_back((i, j + 1));
+        work.push_back((i, j - 1));
+    }
+
+    // dump(&m);
+    m.len()
+}
+
+fn find_seed(m: &HashSet<(i32, i32)>) -> (i32, i32) {
+    let mni = m.iter().map(|p| p.0).min().unwrap();
+    let mnj = m.iter().map(|p| p.1).min().unwrap();
+    let mxj = m.iter().map(|p| p.1).max().unwrap();
+
+    let seed_i = mni + 1;
+    let mut seed_j = 0;
+    let mut saw_hash = false;
+    for j in mnj..=mxj {
+        let contains = m.contains(&(seed_i, j));
+        if saw_hash && !contains {
+            seed_j = j;
+            break;
+        }
+        if contains {
+            saw_hash = true;
+        }
+    }
+    (seed_i, seed_j)
+}
+
+fn dump(m: &HashSet<(i32, i32)>) {
+    let mni = m.iter().map(|p| p.0).min().unwrap();
+    let mxi = m.iter().map(|p| p.0).max().unwrap();
+    let mnj = m.iter().map(|p| p.1).min().unwrap();
+    let mxj = m.iter().map(|p| p.1).max().unwrap();
+    println!();
+    println!("i: {} to {}", mni, mxi);
+    println!("j: {} to {}", mnj, mxj);
+    for i in mni..=mxi {
+        for j in mnj..=mxj {
+            if m.contains(&(i, j)) {
+                print!("#");
+            } else {
+                print!(".");
+            }
+        }
+        println!();
+    }
 }
 
 #[aoc(day18, part2)]
-fn solve_part2(input: &Task) -> usize {
+fn solve_part2(input: &Task) -> i64 {
     2
 }
 
@@ -54,6 +130,6 @@ U 2 (#7a21e3)"#
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 62);
         let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
+        assert_eq!(result2, 952408144115);
     }
 }
