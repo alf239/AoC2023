@@ -1,5 +1,3 @@
-use std::collections::{HashSet, VecDeque};
-
 use aoc_parse::{parser, prelude::*};
 
 pub struct Cmd {
@@ -20,73 +18,15 @@ pub fn input_generator(input: &str) -> Task {
     p.parse(input).unwrap()
 }
 
-#[aoc(day18, part1)]
-fn solve_part1(input: &Task) -> usize {
-    let mut m: HashSet<(i32, i32)> = HashSet::new();
-    let mut i = 0;
-    let mut j = 0;
-    m.insert((i, j));
-    for cmd in input {
-        for _ in 0..cmd.len {
-            match cmd.dir {
-                0 => j += 1,
-                1 => i += 1,
-                2 => j -= 1,
-                3 => i -= 1,
-                _ => panic!("Holy shit, what's {}", cmd.dir),
-            }
-            m.insert((i, j));
-        }
-    }
-
-    let seed = find_seed(&m);
-
-    let mut work = VecDeque::new();
-    work.push_back(seed);
-    while let Some((i, j)) = work.pop_front() {
-        if m.contains(&(i, j)) {
-            continue;
-        }
-        m.insert((i, j));
-        work.push_back((i + 1, j));
-        work.push_back((i - 1, j));
-        work.push_back((i, j + 1));
-        work.push_back((i, j - 1));
-    }
-
-    // dump(&m);
-    m.len()
-}
-
-fn find_seed(m: &HashSet<(i32, i32)>) -> (i32, i32) {
-    let mni = m.iter().map(|p| p.0).min().unwrap();
-    let mnj = m.iter().map(|p| p.1).min().unwrap();
-    let mxj = m.iter().map(|p| p.1).max().unwrap();
-
-    let seed_i = mni + 1;
-    let mut seed_j = 0;
-    let mut saw_hash = false;
-    for j in mnj..=mxj {
-        let contains = m.contains(&(seed_i, j));
-        if saw_hash && !contains {
-            seed_j = j;
-            break;
-        }
-        if contains {
-            saw_hash = true;
-        }
-    }
-    (seed_i, seed_j)
-}
-
-#[aoc(day18, part2)]
-fn solve_part2(input: &Task) -> i64 {
+fn area<I>(cmds: I) -> i64
+where
+    I: Iterator<Item = (usize, usize)>,
+{
     let mut prev = (0, 0);
     let mut area = 0i64;
     let mut perimeter = 1i64;
-    for cmd in input {
-        let dir = cmd.rgb % 16;
-        let len = cmd.rgb as i64 / 16;
+    for (dir, len) in cmds {
+        let len = len as i64;
         let next = match dir {
             0 => (prev.0, prev.1 + len),
             1 => (prev.0 + len, prev.1),
@@ -99,6 +39,20 @@ fn solve_part2(input: &Task) -> i64 {
         prev = next;
     }
     (area.abs() + perimeter) / 2 + 1
+}
+
+#[aoc(day18, part1)]
+fn solve_part1(input: &Task) -> i64 {
+    let cmds = input.iter().map(|cmd| (cmd.dir, cmd.len));
+    area(cmds)
+}
+
+#[aoc(day18, part2)]
+fn solve_part2(input: &Task) -> i64 {
+    let cmds = input
+        .iter()
+        .map(|cmd| ((cmd.rgb % 16) as usize, (cmd.rgb / 16) as usize));
+    area(cmds)
 }
 
 #[cfg(test)]
