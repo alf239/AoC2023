@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Range};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -77,9 +77,142 @@ fn solve_part1(input: &Task) -> i64 {
         .sum()
 }
 
+#[derive(Debug, Clone)]
+struct Ratings {
+    x: Range<usize>,
+    m: Range<usize>,
+    a: Range<usize>,
+    s: Range<usize>,
+}
+
+fn intersect_ranges(range1: Range<usize>, range2: Range<usize>) -> Option<Range<usize>> {
+    let start = std::cmp::max(range1.start, range2.start);
+    let end = std::cmp::min(range1.end, range2.end);
+
+    if start < end {
+        Some(start..end)
+    } else {
+        None
+    }
+}
+
+impl Ratings {
+    fn cut_gt(&self, name: &str, lim: usize) -> (Option<Ratings>, Option<Ratings>) {
+        let low = 1..lim + 1;
+        let high = lim + 1..4001;
+        match name {
+            "x" => (
+                intersect_ranges(self.x.clone(), low).map(|n| Ratings {
+                    x: n,
+                    ..self.clone()
+                }),
+                intersect_ranges(self.x.clone(), high).map(|n| Ratings {
+                    x: n,
+                    ..self.clone()
+                }),
+            ),
+            "m" => (
+                intersect_ranges(self.m.clone(), low).map(|n| Ratings {
+                    m: n,
+                    ..self.clone()
+                }),
+                intersect_ranges(self.m.clone(), high).map(|n| Ratings {
+                    m: n,
+                    ..self.clone()
+                }),
+            ),
+            "a" => (
+                intersect_ranges(self.a.clone(), low).map(|n| Ratings {
+                    a: n,
+                    ..self.clone()
+                }),
+                intersect_ranges(self.a.clone(), high).map(|n| Ratings {
+                    a: n,
+                    ..self.clone()
+                }),
+            ),
+            "s" => (
+                intersect_ranges(self.s.clone(), low).map(|n| Ratings {
+                    s: n,
+                    ..self.clone()
+                }),
+                intersect_ranges(self.s.clone(), high).map(|n| Ratings {
+                    s: n,
+                    ..self.clone()
+                }),
+            ),
+            _ => panic!("Unknown name {}", name),
+        }
+    }
+
+    fn len(&self) -> i64 {
+        self.x.len() as i64 * self.m.len() as i64 * self.a.len() as i64 * self.s.len() as i64
+    }
+}
+
+fn collect_accepted(
+    wfs: &HashMap<String, Vec<Rule>>,
+    wf: &str,
+    candidate: &Ratings,
+    result: &mut Vec<Ratings>,
+) {
+    let mut rem = candidate.clone();
+    if wf == "A" {
+        result.push(rem);
+        return;
+    }
+    if wf == "R" {
+        return;
+    }
+    match wfs.get(wf) {
+        Some(wf) => {
+            for rule in wf {
+                use Rule::*;
+
+                match rule {
+                    Gt(name, lim, go) => {
+                        let (lo, hi) = rem.cut_gt(name, *lim);
+                        if let Some(h) = hi {
+                            collect_accepted(wfs, go, &h, result);
+                        }
+                        match lo {
+                            Some(l) => rem = l,
+                            None => return,
+                        };
+                    }
+                    Lt(name, lim, go) => {
+                        let (lo, hi) = rem.cut_gt(name, *lim - 1);
+                        if let Some(l) = lo {
+                            collect_accepted(wfs, go, &l, result);
+                        }
+                        match hi {
+                            Some(h) => rem = h,
+                            None => return,
+                        };
+                    }
+                    Jump(go) => {
+                        collect_accepted(wfs, go, &rem, result);
+                        return;
+                    }
+                }
+            }
+            panic!("Out of rules!");
+        }
+        None => panic!("Don't know rule {}", wf),
+    }
+}
+
 #[aoc(day19, part2)]
 fn solve_part2(input: &Task) -> i64 {
-    2
+    let mut accepted: Vec<Ratings> = Vec::new();
+    let seed = Ratings {
+        x: 1..4001,
+        m: 1..4001,
+        a: 1..4001,
+        s: 1..4001,
+    };
+    collect_accepted(&input.workflows, "in", &seed, &mut accepted);
+    accepted.iter().map(|rs| rs.len()).sum()
 }
 
 #[cfg(test)]
