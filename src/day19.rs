@@ -66,8 +66,8 @@ fn solve_part1(input: &Task) -> i64 {
     input
         .parts
         .iter()
-        .filter(|p| accepted(&input.workflows, "in", *p))
-        .flat_map(|p| p.iter().map(|x| *x as i64))
+        .filter(|&p| accepted(&input.workflows, "in", p))
+        .flat_map(|p| p.iter().map(|&x| x as i64))
         .sum()
 }
 
@@ -85,8 +85,8 @@ fn intersect(a: Range<usize>, b: Range<usize>) -> Option<Range<usize>> {
 }
 
 fn cut_at(p: Parts, name: usize, lim: usize) -> (Option<Parts>, Option<Parts>) {
-    let lo = intersect(p[name].clone(), 1..lim + 1);
-    let hi = intersect(p[name].clone(), lim + 1..4001);
+    let lo = intersect(p[name].clone(), 1..lim);
+    let hi = intersect(p[name].clone(), lim..4001);
     (
         lo.map(|r| {
             let mut res = p.clone();
@@ -126,7 +126,7 @@ fn collect_accepted(
 
                 match rule {
                     Gt(name, lim, go) => {
-                        let (lo, hi) = cut_at(rem, *name, *lim);
+                        let (lo, hi) = cut_at(rem, *name, *lim + 1);
                         if let Some(h) = hi {
                             collect_accepted(wfs, go, &h, result);
                         }
@@ -136,7 +136,7 @@ fn collect_accepted(
                         };
                     }
                     Lt(name, lim, go) => {
-                        let (lo, hi) = cut_at(rem, *name, *lim - 1);
+                        let (lo, hi) = cut_at(rem, *name, *lim);
                         if let Some(l) = lo {
                             collect_accepted(wfs, go, &l, result);
                         }
