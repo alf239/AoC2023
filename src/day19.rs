@@ -4,14 +4,14 @@ use aoc_parse::{parser, prelude::*};
 
 #[derive(Debug, Clone)]
 pub enum Rule {
-    Gt(String, usize, String),
-    Lt(String, usize, String),
+    Gt(usize, usize, String),
+    Lt(usize, usize, String),
     Jump(String),
 }
 
 pub struct Task {
     workflows: HashMap<String, Vec<Rule>>,
-    parts: Vec<HashMap<String, usize>>,
+    parts: Vec<[usize; 4]>,
 }
 
 #[aoc_generator(day19)]
@@ -23,20 +23,20 @@ pub fn input_generator(input: &str) -> Task {
             repeat_sep(
             {
                 name:string(alpha+) => Jump(name),
-                name:string(lower+) ">" limit:usize ":" target:string(alpha+) => Gt(name, limit, target),
-                name:string(lower+) "<" limit:usize ":" target:string(alpha+) => Lt(name, limit, target),
+                name:char_of("xmas") ">" limit:usize ":" target:string(alpha+) => Gt(name, limit, target),
+                name:char_of("xmas") "<" limit:usize ":" target:string(alpha+) => Lt(name, limit, target),
             }, ",") "}")
         line("")
-        parts:lines("{" repeat_sep(string(lower+) "=" usize, ",") "}")
+        parts:lines("{x=" x:usize ",m=" m:usize ",a=" a:usize ",s=" s:usize "}" => [x,m,a,s])
         => Task {
             workflows: workflows.iter().cloned().collect(),
-            parts: parts.iter().map(|rs| rs.iter().cloned().collect()).collect(),
+            parts,
         }
     );
     p.parse(input).unwrap()
 }
 
-fn accepted(wfs: &HashMap<String, Vec<Rule>>, wf: &str, part: &HashMap<String, usize>) -> bool {
+fn accepted(wfs: &HashMap<String, Vec<Rule>>, wf: &str, part: &[usize]) -> bool {
     if wf == "A" {
         return true;
     }
@@ -49,15 +49,9 @@ fn accepted(wfs: &HashMap<String, Vec<Rule>>, wf: &str, part: &HashMap<String, u
                 use Rule::*;
 
                 match rule {
-                    Gt(name, lim, go) if *part.get(name).unwrap() > *lim => {
-                        return accepted(wfs, go, part);
-                    }
-                    Lt(name, lim, go) if *part.get(name).unwrap() < *lim => {
-                        return accepted(wfs, go, part);
-                    }
-                    Jump(go) => {
-                        return accepted(wfs, go, part);
-                    }
+                    Gt(name, lim, go) if part[*name] > *lim => return accepted(wfs, go, part),
+                    Lt(name, lim, go) if part[*name] < *lim => return accepted(wfs, go, part),
+                    Jump(go) => return accepted(wfs, go, part),
                     _ => {}
                 }
             }
@@ -72,22 +66,16 @@ fn solve_part1(input: &Task) -> i64 {
     input
         .parts
         .iter()
-        .filter(|p| accepted(&input.workflows, "in", p))
-        .flat_map(|p| p.values().map(|&x| x as i64))
+        .filter(|p| accepted(&input.workflows, "in", *p))
+        .flat_map(|p| p.iter().map(|x| *x as i64))
         .sum()
 }
 
-#[derive(Debug, Clone)]
-struct Ratings {
-    x: Range<usize>,
-    m: Range<usize>,
-    a: Range<usize>,
-    s: Range<usize>,
-}
+type Parts = [Range<usize>; 4];
 
-fn intersect_ranges(range1: Range<usize>, range2: Range<usize>) -> Option<Range<usize>> {
-    let start = std::cmp::max(range1.start, range2.start);
-    let end = std::cmp::min(range1.end, range2.end);
+fn intersect(a: Range<usize>, b: Range<usize>) -> Option<Range<usize>> {
+    let start = std::cmp::max(a.start, b.start);
+    let end = std::cmp::min(a.end, b.end);
 
     if start < end {
         Some(start..end)
@@ -96,65 +84,32 @@ fn intersect_ranges(range1: Range<usize>, range2: Range<usize>) -> Option<Range<
     }
 }
 
-impl Ratings {
-    fn cut_gt(&self, name: &str, lim: usize) -> (Option<Ratings>, Option<Ratings>) {
-        let low = 1..lim + 1;
-        let high = lim + 1..4001;
-        match name {
-            "x" => (
-                intersect_ranges(self.x.clone(), low).map(|n| Ratings {
-                    x: n,
-                    ..self.clone()
-                }),
-                intersect_ranges(self.x.clone(), high).map(|n| Ratings {
-                    x: n,
-                    ..self.clone()
-                }),
-            ),
-            "m" => (
-                intersect_ranges(self.m.clone(), low).map(|n| Ratings {
-                    m: n,
-                    ..self.clone()
-                }),
-                intersect_ranges(self.m.clone(), high).map(|n| Ratings {
-                    m: n,
-                    ..self.clone()
-                }),
-            ),
-            "a" => (
-                intersect_ranges(self.a.clone(), low).map(|n| Ratings {
-                    a: n,
-                    ..self.clone()
-                }),
-                intersect_ranges(self.a.clone(), high).map(|n| Ratings {
-                    a: n,
-                    ..self.clone()
-                }),
-            ),
-            "s" => (
-                intersect_ranges(self.s.clone(), low).map(|n| Ratings {
-                    s: n,
-                    ..self.clone()
-                }),
-                intersect_ranges(self.s.clone(), high).map(|n| Ratings {
-                    s: n,
-                    ..self.clone()
-                }),
-            ),
-            _ => panic!("Unknown name {}", name),
-        }
-    }
+fn cut_at(p: Parts, name: usize, lim: usize) -> (Option<Parts>, Option<Parts>) {
+    let lo = intersect(p[name].clone(), 1..lim + 1);
+    let hi = intersect(p[name].clone(), lim + 1..4001);
+    (
+        lo.map(|r| {
+            let mut res = p.clone();
+            res[name] = r;
+            res
+        }),
+        hi.map(|r| {
+            let mut res = p.clone();
+            res[name] = r;
+            res
+        }),
+    )
+}
 
-    fn len(&self) -> i64 {
-        self.x.len() as i64 * self.m.len() as i64 * self.a.len() as i64 * self.s.len() as i64
-    }
+fn size(p: &[Range<usize>]) -> i64 {
+    p.iter().map(|x| x.len() as i64).product()
 }
 
 fn collect_accepted(
     wfs: &HashMap<String, Vec<Rule>>,
     wf: &str,
-    candidate: &Ratings,
-    result: &mut Vec<Ratings>,
+    candidate: &Parts,
+    result: &mut Vec<Parts>,
 ) {
     let mut rem = candidate.clone();
     if wf == "A" {
@@ -171,7 +126,7 @@ fn collect_accepted(
 
                 match rule {
                     Gt(name, lim, go) => {
-                        let (lo, hi) = rem.cut_gt(name, *lim);
+                        let (lo, hi) = cut_at(rem, *name, *lim);
                         if let Some(h) = hi {
                             collect_accepted(wfs, go, &h, result);
                         }
@@ -181,7 +136,7 @@ fn collect_accepted(
                         };
                     }
                     Lt(name, lim, go) => {
-                        let (lo, hi) = rem.cut_gt(name, *lim - 1);
+                        let (lo, hi) = cut_at(rem, *name, *lim - 1);
                         if let Some(l) = lo {
                             collect_accepted(wfs, go, &l, result);
                         }
@@ -204,15 +159,10 @@ fn collect_accepted(
 
 #[aoc(day19, part2)]
 fn solve_part2(input: &Task) -> i64 {
-    let mut accepted: Vec<Ratings> = Vec::new();
-    let seed = Ratings {
-        x: 1..4001,
-        m: 1..4001,
-        a: 1..4001,
-        s: 1..4001,
-    };
+    let mut accepted: Vec<Parts> = Vec::new();
+    let seed = [1..4001, 1..4001, 1..4001, 1..4001];
     collect_accepted(&input.workflows, "in", &seed, &mut accepted);
-    accepted.iter().map(|rs| rs.len()).sum()
+    accepted.iter().map(|rs| size(rs)).sum()
 }
 
 #[cfg(test)]
