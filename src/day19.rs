@@ -7,18 +7,10 @@ pub enum Rule {
     Gt(String, usize, String),
     Lt(String, usize, String),
     Jump(String),
-    Accept,
-    Reject,
-}
-
-#[derive(Debug, Clone)]
-pub struct Workflow {
-    name: String,
-    rules: Vec<Rule>,
 }
 
 pub struct Task {
-    workflows: HashMap<String, Workflow>,
+    workflows: HashMap<String, Vec<Rule>>,
     parts: Vec<HashMap<String, usize>>,
 }
 
@@ -26,54 +18,52 @@ pub struct Task {
 pub fn input_generator(input: &str) -> Task {
     use Rule::*;
     let p = parser!(
-            workflows:lines(name: string(lower+) "{" rules:repeat_sep(
-                {
-                    "A" => Accept,
-                    "R" => Reject,
-                    name:string(lower+) => Jump(name),
-                    name:string(lower+) ">" limit:usize ":" target:string(alpha+) => Gt(name, limit, target),
-                    name:string(lower+) "<" limit:usize ":" target:string(alpha+) => Lt(name, limit, target),
-    }, ",") "}" => (name.clone(), Workflow {name, rules}))
-            line("")
-            parts:lines("{" repeat_sep(string(lower+) "=" usize, ",") "}")
-            => Task {
-                workflows: workflows.iter().cloned().collect(),
-                parts: parts.iter().map(|rs| rs.iter().cloned().collect()).collect(),
-            }
-        );
+        workflows:lines(
+            string(lower+) "{"
+            repeat_sep(
+            {
+                name:string(alpha+) => Jump(name),
+                name:string(lower+) ">" limit:usize ":" target:string(alpha+) => Gt(name, limit, target),
+                name:string(lower+) "<" limit:usize ":" target:string(alpha+) => Lt(name, limit, target),
+            }, ",") "}")
+        line("")
+        parts:lines("{" repeat_sep(string(lower+) "=" usize, ",") "}")
+        => Task {
+            workflows: workflows.iter().cloned().collect(),
+            parts: parts.iter().map(|rs| rs.iter().cloned().collect()).collect(),
+        }
+    );
     p.parse(input).unwrap()
 }
 
-fn accepted(rules: &HashMap<String, Workflow>, rule: &str, part: &HashMap<String, usize>) -> bool {
-    if rule == "A" {
+fn accepted(wfs: &HashMap<String, Vec<Rule>>, wf: &str, part: &HashMap<String, usize>) -> bool {
+    if wf == "A" {
         return true;
     }
-    if rule == "R" {
+    if wf == "R" {
         return false;
     }
-    match rules.get(rule) {
+    match wfs.get(wf) {
         Some(wf) => {
-            for rule in &wf.rules {
+            for rule in wf {
                 use Rule::*;
 
                 match rule {
                     Gt(name, lim, go) if *part.get(name).unwrap() > *lim => {
-                        return accepted(rules, &go, part);
+                        return accepted(wfs, go, part);
                     }
                     Lt(name, lim, go) if *part.get(name).unwrap() < *lim => {
-                        return accepted(rules, &go, part);
+                        return accepted(wfs, go, part);
                     }
                     Jump(go) => {
-                        return accepted(rules, &go, part);
+                        return accepted(wfs, go, part);
                     }
-                    Accept => return true,
-                    Reject => return false,
                     _ => {}
                 }
             }
             panic!("Out of rules!");
         }
-        None => panic!("Don't know rule {}", rule),
+        None => panic!("Don't know rule {}", wf),
     }
 }
 
@@ -121,6 +111,6 @@ hdj{m>838:A,pv}
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 19114);
         let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
+        assert_eq!(result2, 167409079868000);
     }
 }
