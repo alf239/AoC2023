@@ -122,7 +122,96 @@ fn solve_part1(input: &Task) -> u64 {
 
 #[aoc(day20, part2)]
 fn solve_part2(input: &Task) -> u64 {
-    2
+    let mut fflops = 0u64;
+    let mut conj_masks = [0u64; 64];
+    let mut conjs = [0u64; 64];
+
+    let mut names: HashMap<String, usize> = input
+        .iter()
+        .enumerate()
+        .map(|(i, (n, _))| (n.clone(), i))
+        .collect();
+    names.insert("rx".to_string(), names.len());
+    names.insert("output".to_string(), names.len());
+
+    let mut rev_names: Vec<String> = input.iter().map(|(n, _)| n.clone()).collect();
+    rev_names.push("rx".to_string());
+    rev_names.push("output".to_string());
+
+    let mut nodes: Vec<Node> = input.iter().map(|(_, (t, _))| *t).collect();
+    nodes.push(Node::FlipFlop);
+    nodes.push(Node::FlipFlop);
+
+    let mut outs: Vec<Vec<usize>> = input
+        .iter()
+        .map(|(_, (_, outs))| {
+            outs.iter()
+                .map(|n| names.get(n).unwrap_or_else(|| panic!("Unknown name {}", n)))
+                .cloned()
+                .collect()
+        })
+        .collect();
+    outs.push(Vec::new());
+    outs.push(Vec::new());
+
+    for (i, (_, (_, out))) in input.iter().enumerate() {
+        for n in out.iter() {
+            let &j = names.get(n).unwrap_or_else(|| panic!("Unknown name {}", n));
+            conj_masks[j] |= 1 << i;
+        }
+    }
+
+    let &bcast = names.get("broadcaster").unwrap();
+
+    let mut answer = 1u64;
+    let mut terms = vec![
+        "dx".to_string(),
+        "jh".to_string(),
+        "ck".to_string(),
+        "cs".to_string(),
+    ];
+    let mut work = VecDeque::new();
+    for i in 0..10000 {
+        work.push_back((0, bcast, false));
+        while let Some((src, dst, lvl)) = work.pop_front() {
+            match nodes[dst] {
+                Node::Broadcaster => {
+                    for &o in outs[dst].iter() {
+                        work.push_back((dst, o, lvl));
+                    }
+                }
+                Node::FlipFlop if !lvl => {
+                    let mask = 1u64 << dst;
+                    fflops = fflops ^ mask;
+                    let state = fflops & mask != 0;
+                    for &o in outs[dst].iter() {
+                        work.push_back((dst, o, state));
+                    }
+                }
+                Node::FlipFlop => {}
+                Node::Nand => {
+                    if lvl {
+                        conjs[dst] |= 1 << src;
+                    } else {
+                        conjs[dst] &= !(1 << src);
+                    }
+                    let out = conjs[dst] != conj_masks[dst];
+                    if !out {
+                        let name = &rev_names[dst];
+                        if terms.contains(name) {
+                            // println!("Conj {} activated at {}", name, i + 1);
+                            answer *= i + 1;
+                            terms.remove(terms.iter().position(|x| x == name).unwrap());
+                        }
+                    }
+                    for &o in outs[dst].iter() {
+                        work.push_back((dst, o, out));
+                    }
+                }
+            }
+        }
+    }
+    answer
 }
 
 #[cfg(test)]
