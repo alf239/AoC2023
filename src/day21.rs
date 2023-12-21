@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{
+    collections::{HashMap, HashSet},
+    mem::swap,
+};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -79,7 +82,7 @@ fn solve_part1(input: &Task) -> usize {
     part1(input, 64)
 }
 
-fn part2(input: &Task, n: usize) -> usize {
+fn part2(input: &Task, n: usize) -> u64 {
     let mut is = usize::MAX;
     let mut js = 0;
     for (i, row) in input.iter().enumerate() {
@@ -118,10 +121,15 @@ fn part2(input: &Task, n: usize) -> usize {
         }
     }
 
-    let mut state = vec![(is as i32, js as i32)];
-    for _ in 0..n {
+    let mut seen = HashSet::new();
+    let mut boundary: HashSet<(i32, i32)> = HashSet::from_iter([(is as i32, js as i32)]);
+    let mut prev = 0u64;
+    let mut count = 1u64;
+    let mut old_count = 0;
+    let mut old_old_count = 0;
+    for i in 0..n {
         let mut next = HashSet::new();
-        for (ii, jj) in state.iter() {
+        for (ii, jj) in boundary.iter() {
             let ni = normalize(*ii, input.len());
             let nj = normalize(*jj, input[0].len());
 
@@ -130,13 +138,40 @@ fn part2(input: &Task, n: usize) -> usize {
                     .get(&(ni, nj))
                     .unwrap()
                     .iter()
-                    .map(|(di, dj)| (ii + di, jj + dj)),
+                    .map(|(di, dj)| (ii + di, jj + dj))
+                    .filter(|(i, j)| !seen.contains(&(*i, *j))),
             );
         }
-        state.clear();
-        state.extend(next.iter());
+        let nn = prev + next.len() as u64;
+        prev = count;
+        count = nn;
+
+        // println!(
+        //     "Step {}: {} {}",
+        //     i,
+        //     count,
+        //     count as f64 / (0.001 + (0.84405 * (i * i) as f64))
+        // );
+
+        if i > 0 && (26501365 - i - 1) % input.len() == 0 {
+            let cycles_left = (26501365 - i - 1) / input.len();
+            if i > 5000 && cycles_left % 10 == 0 {
+                println!("Step {}, {} cycles to go", i, cycles_left);
+                let left = cycles_left as u64;
+                let a = count - old_count;
+                let d = (count - old_count) - (old_count - old_old_count);
+                let a = a + d;
+                let predict = count + left * (2 * a + (left - 1) * d) / 2;
+                println!("Speed: {}, Acc: {}, Prognosis: {}", a, d, predict);
+            }
+            old_old_count = old_count;
+            old_count = count;
+        }
+
+        swap(&mut seen, &mut boundary);
+        swap(&mut boundary, &mut next);
     }
-    state.len()
+    count
 }
 
 fn normalize(x: i32, h: usize) -> usize {
@@ -144,7 +179,7 @@ fn normalize(x: i32, h: usize) -> usize {
 }
 
 #[aoc(day21, part2)]
-fn solve_part2(input: &Task) -> usize {
+fn solve_part2(input: &Task) -> u64 {
     part2(input, 26501365)
 }
 
@@ -177,13 +212,18 @@ mod tests {
     fn example2() {
         let parsed = input_generator(INPUT);
         assert_eq!(part2(&parsed, 100), 6536);
+        assert_eq!(part2(&parsed, 500), 167004);
     }
 
     #[test]
     fn example3() {
         let parsed = input_generator(INPUT);
-        assert_eq!(part2(&parsed, 500), 167004);
         assert_eq!(part2(&parsed, 1000), 668697);
+    }
+
+    #[test]
+    fn example4() {
+        let parsed = input_generator(INPUT);
         assert_eq!(part2(&parsed, 5000), 16733044);
     }
 }
