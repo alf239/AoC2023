@@ -42,8 +42,7 @@ pub fn input_generator(input: &str) -> Task {
     p.parse(input).unwrap()
 }
 
-#[aoc(day22, part1)]
-fn solve_part1(input: &Task) -> usize {
+fn dependencies(input: &Task) -> Vec<HashSet<usize>> {
     let xn = input.iter().flat_map(|b| [b.xf, b.xt]).min().unwrap();
     let yn = input.iter().flat_map(|b| [b.yf, b.yt]).min().unwrap();
     assert_eq!(xn, 0);
@@ -52,7 +51,6 @@ fn solve_part1(input: &Task) -> usize {
     let xx = input.iter().flat_map(|b| [b.xf, b.xt]).max().unwrap();
     let yx = input.iter().flat_map(|b| [b.yf, b.yt]).max().unwrap();
 
-    let mut support: Vec<Vec<usize>> = (0..input.len()).map(|_| Vec::new()).collect();
     let mut work: Vec<Vec<(usize, usize)>> = (0..=xx)
         .map(|_| (0..=yx).map(|_| (0, usize::MAX)).collect())
         .collect();
@@ -60,7 +58,7 @@ fn solve_part1(input: &Task) -> usize {
     let mut queue = input.clone();
     queue.sort_by_key(|b| b.bottom());
 
-    let mut bearing = HashSet::new();
+    let mut bearing: Vec<HashSet<usize>> = Vec::new();
 
     for (i, block) in queue.iter().enumerate() {
         let footprint = block.footprint();
@@ -76,20 +74,48 @@ fn solve_part1(input: &Task) -> usize {
             })
             .filter(|i| *i != usize::MAX)
             .collect();
-        if support.len() == 1 {
-            bearing.extend(support);
-        }
+        bearing.push(support);
         for (x, y) in footprint {
             work[x][y] = (level + block.height(), i);
         }
     }
+    bearing
+}
 
-    queue.len() - bearing.len()
+#[aoc(day22, part1)]
+fn solve_part1(input: &Task) -> usize {
+    let bearing: HashSet<usize> = dependencies(input)
+        .iter()
+        .filter_map(|support| {
+            if support.len() == 1 {
+                support.iter().next()
+            } else {
+                None
+            }
+        })
+        .cloned()
+        .collect();
+    input.len() - bearing.len()
 }
 
 #[aoc(day22, part2)]
 fn solve_part2(input: &Task) -> usize {
-    2
+    let deps = dependencies(input);
+
+    let mut result = 0;
+    for i in 0..deps.len() {
+        let mut gone = HashSet::from([i]);
+        for j in i + 1..deps.len() {
+            if !deps[j].is_empty() && deps[j].iter().all(|x| gone.contains(x)) {
+                gone.insert(j);
+            }
+        }
+        if gone.len() > 1 {
+            result += gone.len() - 1;
+        }
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -111,6 +137,6 @@ mod tests {
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 5);
         let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
+        assert_eq!(result2, 7);
     }
 }
