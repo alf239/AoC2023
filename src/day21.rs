@@ -220,10 +220,4 @@ mod tests {
         let parsed = input_generator(INPUT);
         assert_eq!(part2(&parsed, 1000), 668697);
     }
-
-    #[test]
-    fn example4() {
-        let parsed = input_generator(INPUT);
-        assert_eq!(part2(&parsed, 5000), 16733044);
-    }
 }

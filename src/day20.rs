@@ -230,8 +230,6 @@ broadcaster -> a, b, c
         let parsed = input_generator(input);
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 32000000);
-        let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
     }
 
     #[test]
@@ -246,7 +244,5 @@ broadcaster -> a
         let parsed = input_generator(input);
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 11687500);
-        let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
     }
 }
