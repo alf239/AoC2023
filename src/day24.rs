@@ -24,7 +24,6 @@ fn intersect(a: &Stone, b: &Stone, from: i64, to: i64) -> bool {
     let by = b.y - a.y;
     let det = a.dx * b.dy - a.dy * b.dx;
     if det == 0 {
-        println!("{:?} and {:?} are parallel", a, b);
         return false;
     }
     let t2 = bx * a.dy - by * a.dx;
@@ -60,7 +59,7 @@ fn solve_part1(input: &Task) -> usize {
 
 #[aoc(day24, part2)]
 fn solve_part2(input: &Task) -> usize {
-    0
+    2
 }
 
 #[cfg(test)]
@@ -80,6 +79,6 @@ mod tests {
         let result1 = solve1(&parsed, 7, 27);
         assert_eq!(result1, 2);
         let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 0);
+        assert_eq!(result2, 47);
     }
 }

@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{collections::{HashMap, HashSet, VecDeque}, cmp::max};
 
 use aoc_parse::{parser, prelude::*};
 
@@ -99,18 +99,89 @@ fn solve_part1(input: &Task) -> usize {
         }
     }
 
-    for ((src, dst), d) in edges.iter() {
-        println!("n{} -> n{} [weight={}]", *src, *dst, *d);
+    let mut dist = vec![0; nodes.len()];
+    let mut work = VecDeque::new();
+    work.push_back(0);
+    while let Some(n) = work.pop_front() {
+        for ((f, t), d) in edges.iter() {
+            if *f == n {
+                if dist[n] + d > dist[*t] {
+                    dist[*t] = dist[n] + d;
+                }
+                work.push_back(*t);
+            }
+        }
     }
-
-    println!("{:?}", edges);
-    println!("In total {:?} edges to consider", edges.len());
-    1
+    dist[1]
 }
 
 #[aoc(day23, part2)]
 fn solve_part2(input: &Task) -> usize {
-    2
+    let start = input.keys().min().unwrap().clone();
+    let end = input.keys().max().unwrap().clone();
+
+    let mut nodes: Vec<(usize, usize)> = vec![start, end];
+    for (i, j) in input.keys() {
+        if *i == 0 {
+            continue; // skip the start
+        }
+        let neighbours = [(i - 1, *j), (i + 1, *j), (*i, j - 1), (*i, j + 1)]
+            .iter()
+            .filter(|&loc| input.contains_key(loc))
+            .count();
+        if neighbours > 2 {
+            nodes.push((*i, *j));
+        }
+    }
+
+    let mut edges: HashMap<(usize, usize), usize> = HashMap::new();
+    for (nr, &node) in nodes.iter().enumerate().filter(|(_, &n)| n != end) {
+        let mut seen: HashSet<Coords> = HashSet::new();
+        let mut work = VecDeque::new();
+        work.push_back((node, 0));
+        while let Some((n @ (i, j), d)) = work.pop_front() {
+            if seen.contains(&n) {
+                continue;
+            }
+            seen.insert(n);
+            if d > 0 {
+                if let Some(dst) = nodes.iter().position(|&x| x == n) {
+                    edges.insert((nr, dst), d);
+                    continue;
+                }
+            }
+            if i > 0 && input.contains_key(&(i - 1, j)) {
+                work.push_back(((i - 1, j), d + 1));
+            }
+            if input.contains_key(&(i + 1, j)) {
+                work.push_back(((i + 1, j), d + 1));
+            }
+            if input.contains_key(&(i, j - 1)) {
+                work.push_back(((i, j - 1), d + 1));
+            }
+            if input.contains_key(&(i, j + 1)) {
+                work.push_back(((i, j + 1), d + 1));
+            }
+        }
+    }
+
+    let mut dist = 0;
+    let mut work: VecDeque<(usize, u64, usize)> = VecDeque::new();
+    work.push_back((0, 1, 0));
+    while let Some((n, mask, d)) = work.pop_front() {
+        if n == 1 {
+            dist = max(dist, d);
+        }
+        for ((f, t), dd) in edges.iter() {
+            if *f == n {
+                let step_mask = 1u64 << *t;
+                if step_mask & mask == 0 {
+                    work.push_back((*t, step_mask | mask, d + dd));
+                }
+            }
+        }
+    }
+    dist
 }
 
 #[cfg(test)]
@@ -148,6 +219,6 @@ mod tests {
         let result1 = solve_part1(&parsed);
         assert_eq!(result1, 94);
         let result2 = solve_part2(&parsed);
-        assert_eq!(result2, 2);
+        assert_eq!(result2, 154);
     }
 }
