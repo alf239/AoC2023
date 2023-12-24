@@ -31,14 +31,15 @@
                 "args": [
                     "build",
                     "--bin=aoc2023",
-                    "--package=aoc2023"
+                    "--package=aoc2023",
                 ],
                 "filter": {
                     "name": "aoc2023",
                     "kind": "bin"
                 }
             },
-            "args": [],
+            "args": [
+            ],
             "cwd": "${workspaceFolder}"
         },
         {
