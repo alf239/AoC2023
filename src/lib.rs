@@ -6,7 +6,6 @@ extern crate aoc_parse;
 extern crate num_integer;
 extern crate priority_queue;
 extern crate rayon;
-extern crate ndarray_linalg;
 
 mod day1;
 mod day10;
@@ -25,6 +24,7 @@ mod day21;
 mod day22;
 mod day23;
 mod day24;
+mod day25;
 mod day3;
 mod day4;
 mod day5;
