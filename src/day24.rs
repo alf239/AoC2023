@@ -58,12 +58,6 @@ fn solve_part1(input: &Task) -> usize {
     solve1(&input, orig_from, orig_to)
 }
 
-fn dist(a: &Stone, b: &Stone, t: i64) -> i64 {
-    (a.x + a.dx * t - b.x - b.dx * (t + 1)).abs()
-        + (a.y + a.dy * t - b.y - b.dy * (t + 1)).abs()
-        + (a.z + a.dz * t - b.z - b.dz * (t + 1)).abs()
-}
-
 #[aoc(day24, part2)]
 fn solve_part2(input: &Task) -> usize {
     let s1 = input[0];
@@ -129,7 +123,6 @@ fn solve_part2(input: &Task) -> usize {
     let decomp = a.lu();
     let res2 = decomp.solve(&b).unwrap();
     let z = res2[2];
-
 
     (-x - y - z).round() as usize
 }
