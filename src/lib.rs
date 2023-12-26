@@ -6,6 +6,7 @@ extern crate aoc_parse;
 extern crate num_integer;
 extern crate priority_queue;
 extern crate rayon;
+extern crate nalgebra as na;
 
 mod day1;
 mod day10;
