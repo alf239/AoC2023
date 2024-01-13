@@ -1,12 +1,5 @@
-extern crate aoc_runner;
-
 #[macro_use]
 extern crate aoc_runner_derive;
-extern crate aoc_parse;
-extern crate num_integer;
-extern crate priority_queue;
-extern crate rayon;
-extern crate nalgebra as na;
 
 mod day1;
 mod day10;
